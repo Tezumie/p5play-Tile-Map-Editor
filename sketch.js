@@ -7,8 +7,8 @@
 //hold ctrl - continuously select multiple tiles while moving mouse
 //tab - copy the tile map to your clip board, and log it in the console
 
-// you can upload your own strings un-commenting the prompt section,
-// in the setup. exclude "[" and "]" when pasting in your map
+// you can upload your own tile maps by un-commenting the prompt section,
+// in the setup. exclude "[" and "]" when pasting in your map string.
 
 // you can assign colors to any character you would like with,
 // the getColorFromKey(key) function below;
