@@ -6,10 +6,6 @@
 //shift+left click - select multiple tiles one at a time
 //hold ctrl - continuously select multiple tiles while moving mouse
 //tab - copy the tile map to your clip board, and log it in the console
-
-// you can upload your own tile maps by un-commenting the prompt section,
-// in the setup. exclude "[" and "]" when pasting in your map string.
-
 // you can assign colors to any character you would like with,
 // the getColorFromKey(key) function below;
 
@@ -38,8 +34,10 @@ let canvasHeight = gridHeight * gridSize;
 let maxInputLength = gridWidth * gridHeight;
 let fontSize = 14;
 let padding = 10;
+
 let selectedTiles = [];
 let isShiftDown = false;
+
 function setup() {
   Canvas = createCanvas(canvasWidth, canvasHeight);
   Canvas.style("position", "absolute");
@@ -55,17 +53,14 @@ function setup() {
     inputText[i] = "";
     tileColors[i] = color(255);
   }
-  // Prompt for grid string input, uncomment the two lines below and run the sketch.
-  // const gridString = prompt("Enter grid string:");
-  // parseGridString(gridString);
 }
 function draw() {
   background(220);
   // Draw grid
   for (let x = 0; x < gridWidth; x++) {
     for (let y = 0; y < gridHeight; y++) {
-      const tileIndex = x + y * gridWidth;
-      const tileCenter = createVector(x, y)
+      let tileIndex = x + y * gridWidth;
+      let tileCenter = createVector(x, y)
         .mult(gridSize)
         .add(gridSize / 2, gridSize / 2);
       if (isSelectedTile(x, y)) {
@@ -85,7 +80,7 @@ function draw() {
   }
   // Draw cursor
   if (frameCount % 60 < 30 && !isShiftDown && selectedTiles.length > 0) {
-    const cursorPositionInPixels = selectedTiles[0]
+    let cursorPositionInPixels = selectedTiles[0]
       .copy()
       .mult(gridSize)
       .add(padding + gridSize / 2, padding + gridSize / 2);
@@ -116,29 +111,8 @@ function draw() {
     }
   }
 }
-function parseGridString(gridString) {
-  const lines = gridString.trim().split("\n");
-  gridHeight = lines.length;
-  gridWidth = lines[0].length;
-
-  for (let y = 0; y < gridHeight; y++) {
-    const line = lines[y];
-    for (let x = 0; x < gridWidth; x++) {
-      const tileIndex = x + y * gridWidth;
-      inputText[tileIndex] = line[x];
-      tileColors[tileIndex] = getColorFromKey(line[x]);
-    }
-  }
-  // Update canvas size based on new grid dimensions
-  canvasWidth = gridWidth * gridSize;
-  canvasHeight = gridHeight * gridSize;
-  resizeCanvas(canvasWidth, canvasHeight);
-  const canvasX = (windowWidth - width) / 2;
-  const canvasY = (windowHeight - height) / 2;
-  Canvas.position(canvasX, canvasY);
-}
 function mouseClicked() {
-  const clickedTile = createVector(
+  let clickedTile = createVector(
     floor(mouseX / gridSize),
     floor(mouseY / gridSize)
   );
@@ -163,8 +137,8 @@ function keyTyped() {
   if (selectedTiles.length > 0) {
     if (isShiftDown) {
       if (keyCode === BACKSPACE) {
-        for (const tile of selectedTiles) {
-          const tileIndex = tile.x + tile.y * gridWidth;
+        for (let tile of selectedTiles) {
+          let tileIndex = tile.x + tile.y * gridWidth;
           if (inputText[tileIndex].length > 0) {
             inputText[tileIndex] = inputText[tileIndex].substring(
               0,
@@ -175,15 +149,15 @@ function keyTyped() {
           }
         }
       } else if (keyCode !== ENTER) {
-        for (const tile of selectedTiles) {
-          const tileIndex = tile.x + tile.y * gridWidth;
+        for (let tile of selectedTiles) {
+          let tileIndex = tile.x + tile.y * gridWidth;
           inputText[tileIndex] = key;
           tileColors[tileIndex] = getColorFromKey(key);
           moveCursorForward();
         }
       }
     } else {
-      const tileIndex = selectedTiles[0].x + selectedTiles[0].y * gridWidth;
+      let tileIndex = selectedTiles[0].x + selectedTiles[0].y * gridWidth;
       if (keyCode === BACKSPACE) {
         if (inputText[tileIndex].length > 0) {
           inputText[tileIndex] = inputText[tileIndex].substring(
@@ -197,8 +171,8 @@ function keyTyped() {
         keyCode !== ENTER &&
         inputText.join("").length < maxInputLength
       ) {
-        for (const tile of selectedTiles) {
-          const tileIndex = tile.x + tile.y * gridWidth;
+        for (let tile of selectedTiles) {
+          let tileIndex = tile.x + tile.y * gridWidth;
           inputText[tileIndex] = key;
           tileColors[tileIndex] = getColorFromKey(key);
           moveCursorForward();
@@ -224,7 +198,7 @@ function keyReleased() {
   }
 }
 function moveCursorForward() {
-  const currentIndex = selectedTiles[0].x + selectedTiles[0].y * gridWidth;
+  let currentIndex = selectedTiles[0].x + selectedTiles[0].y * gridWidth;
 
   if (currentIndex < maxInputLength - 1) {
     selectedTiles[0].x++;
@@ -235,7 +209,7 @@ function moveCursorForward() {
   }
 }
 function moveCursorBackward() {
-  const currentIndex = selectedTiles[0].x + selectedTiles[0].y * gridWidth;
+  let currentIndex = selectedTiles[0].x + selectedTiles[0].y * gridWidth;
 
   if (currentIndex > 0) {
     selectedTiles[0].x--;
@@ -245,31 +219,30 @@ function moveCursorBackward() {
     }
   }
 }
-function parseGridString(gridString) {
-  const lines = gridString.trim().split(",");
-  gridHeight = lines.length;
-  gridWidth = lines[0].trim().length - 2; // Exclude opening and closing quotation marks
-
+function logGridString() {
+  let gridString = "";
   for (let y = 0; y < gridHeight; y++) {
-    const line = lines[y].trim();
+    let line = "";
     for (let x = 0; x < gridWidth; x++) {
-      const tileIndex = x + y * gridWidth;
-      inputText[tileIndex] = line[x + 1]; // Skip the quotation mark
-      tileColors[tileIndex] = getColorFromKey(line[x + 1]);
+      let tileIndex = x + y * gridWidth;
+      line += inputText[tileIndex] || ".";
     }
+    gridString += `"${line}",\n`;
   }
-
-  // Update canvas size based on new grid dimensions
-  canvasWidth = gridWidth * gridSize;
-  canvasHeight = gridHeight * gridSize;
-  resizeCanvas(canvasWidth, canvasHeight);
-  const canvasX = (windowWidth - width) / 2;
-  const canvasY = (windowHeight - height) / 2;
-  Canvas.position(canvasX, canvasY);
+  // Create a textarea element to hold the grid string
+  let textarea = document.createElement("textarea");
+  textarea.value = `[\n${gridString}]`;
+  // Append the textarea to the document body
+  document.body.appendChild(textarea);
+  // Select and copy the contents of the textarea
+  textarea.select();
+  document.execCommand("copy");
+  // Remove the textarea from the document body
+  document.body.removeChild(textarea);
+  console.log(`[\n${gridString}]`);
 }
-
 function isSelectedTile(x, y) {
-  for (const tile of selectedTiles) {
+  for (let tile of selectedTiles) {
     if (tile.x === x && tile.y === y) {
       return true;
     }
