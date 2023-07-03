@@ -6,6 +6,10 @@
 //shift+left click - select multiple tiles one at a time
 //hold ctrl - continuously select multiple tiles while moving mouse
 //tab - copy the tile map to your clip board, and log it in the console
+
+// you can upload your own strings un-commenting the prompt section,
+// in the setup. exclude "[" and "]" when pasting in your map
+
 // you can assign colors to any character you would like with,
 // the getColorFromKey(key) function below;
 
@@ -26,18 +30,16 @@ function getColorFromKey(key) {
 }
 let inputText = [];
 let tileColors = [];
-const gridSize = 20;
-const gridWidth = 25; //change this for you tile map width
-const gridHeight = 25; //change this for you tile map height
-const canvasWidth = gridWidth * gridSize;
-const canvasHeight = gridHeight * gridSize;
-const maxInputLength = gridWidth * gridHeight;
-const fontSize = 14;
-const padding = 10;
-
+let gridSize = 20;
+let gridWidth = 25; //change this for you tile map width
+let gridHeight = 25; //change this for you tile map height
+let canvasWidth = gridWidth * gridSize;
+let canvasHeight = gridHeight * gridSize;
+let maxInputLength = gridWidth * gridHeight;
+let fontSize = 14;
+let padding = 10;
 let selectedTiles = [];
 let isShiftDown = false;
-
 function setup() {
   Canvas = createCanvas(canvasWidth, canvasHeight);
   Canvas.style("position", "absolute");
@@ -53,6 +55,9 @@ function setup() {
     inputText[i] = "";
     tileColors[i] = color(255);
   }
+  // Prompt for grid string input, uncomment the two lines below and run the sketch.
+  // const gridString = prompt("Enter grid string:");
+  // parseGridString(gridString);
 }
 function draw() {
   background(220);
@@ -110,6 +115,27 @@ function draw() {
       }
     }
   }
+}
+function parseGridString(gridString) {
+  const lines = gridString.trim().split("\n");
+  gridHeight = lines.length;
+  gridWidth = lines[0].length;
+
+  for (let y = 0; y < gridHeight; y++) {
+    const line = lines[y];
+    for (let x = 0; x < gridWidth; x++) {
+      const tileIndex = x + y * gridWidth;
+      inputText[tileIndex] = line[x];
+      tileColors[tileIndex] = getColorFromKey(line[x]);
+    }
+  }
+  // Update canvas size based on new grid dimensions
+  canvasWidth = gridWidth * gridSize;
+  canvasHeight = gridHeight * gridSize;
+  resizeCanvas(canvasWidth, canvasHeight);
+  const canvasX = (windowWidth - width) / 2;
+  const canvasY = (windowHeight - height) / 2;
+  Canvas.position(canvasX, canvasY);
 }
 function mouseClicked() {
   const clickedTile = createVector(
@@ -219,28 +245,29 @@ function moveCursorBackward() {
     }
   }
 }
-function logGridString() {
-  let gridString = "";
+function parseGridString(gridString) {
+  const lines = gridString.trim().split(",");
+  gridHeight = lines.length;
+  gridWidth = lines[0].trim().length - 2; // Exclude opening and closing quotation marks
+
   for (let y = 0; y < gridHeight; y++) {
-    let line = "";
+    const line = lines[y].trim();
     for (let x = 0; x < gridWidth; x++) {
       const tileIndex = x + y * gridWidth;
-      line += inputText[tileIndex] || ".";
+      inputText[tileIndex] = line[x + 1]; // Skip the quotation mark
+      tileColors[tileIndex] = getColorFromKey(line[x + 1]);
     }
-    gridString += `"${line}",\n`;
   }
-  // Create a textarea element to hold the grid string
-  const textarea = document.createElement("textarea");
-  textarea.value = `[\n${gridString}]`;
-  // Append the textarea to the document body
-  document.body.appendChild(textarea);
-  // Select and copy the contents of the textarea
-  textarea.select();
-  document.execCommand("copy");
-  // Remove the textarea from the document body
-  document.body.removeChild(textarea);
-  console.log(`[\n${gridString}]`);
+
+  // Update canvas size based on new grid dimensions
+  canvasWidth = gridWidth * gridSize;
+  canvasHeight = gridHeight * gridSize;
+  resizeCanvas(canvasWidth, canvasHeight);
+  const canvasX = (windowWidth - width) / 2;
+  const canvasY = (windowHeight - height) / 2;
+  Canvas.position(canvasX, canvasY);
 }
+
 function isSelectedTile(x, y) {
   for (const tile of selectedTiles) {
     if (tile.x === x && tile.y === y) {
@@ -260,3 +287,4 @@ function removeSelectedTile(x, y) {
     }
   }
 }
+
