@@ -1,263 +1,205 @@
-/////////////////////////////////////////////////////
-//set the Tilemap size with the gridWidth and gridHeight variables;
-
-//left click - select tile
-//press a key to type it in the selected tile
-//shift+left click - select multiple tiles one at a time
-//hold ctrl - continuously select multiple tiles while moving mouse
-//tab - copy the tile map to your clip board, and log it in the console
-// you can assign colors to any character you would like with,
-// the getColorFromKey(key) function below;
-
-function getColorFromKey(key) {
-  switch (key) {
-    //copy paste the two lines below this to make as many colors as you need
-    // case "P":
-    //   return color(195, 50, 195);
-    case "g":
-      return color(0, 255, 0);
-    case "r":
-      return color(255, 0, 0);
-    case "b":
-      return color(0, 0, 255);
-    default:
-      return color(255);
-  }
-}
-let inputText = [];
-let tileColors = [];
-let gridSize = 20;
-let gridWidth = 25; //change this for you tile map width
-let gridHeight = 25; //change this for you tile map height
-let canvasWidth = gridWidth * gridSize;
-let canvasHeight = gridHeight * gridSize;
-let maxInputLength = gridWidth * gridHeight;
-let fontSize = 14;
-let padding = 10;
-
-let selectedTiles = [];
-let isShiftDown = false;
-
+let cols, rows;
+let gridSize = 30;
+let gridData = [];
+let selectedKey = ".";
+let colorData = {};
+let currentColor = "#FFFFFF";
 function setup() {
-  Canvas = createCanvas(canvasWidth, canvasHeight);
+  document.body.style.backgroundColor = color(0);
+  Canvas = createCanvas(500, 500);
   Canvas.style("position", "absolute");
   Canvas.style("object-fit", "contain");
   let canvasX = (windowWidth - width) / 2;
   let canvasY = (windowHeight - height) / 2;
   Canvas.position(canvasX, canvasY);
-  textAlign(CENTER, CENTER);
-  textSize(fontSize);
-  textFont("monospace");
-
-  for (let i = 0; i < maxInputLength; i++) {
-    inputText[i] = "";
-    tileColors[i] = color(255);
+  Canvas.style("border", " 3px solid black");
+  Canvas.style("border-color", color(234, 16, 78));
+  updateGrid();
+  setupControls();
+  document.addEventListener("keydown", handleKeyPress);
+  document.addEventListener("keydown", handleTabPress);
+}
+function windowResized() {
+  resizeCanvas(cols * gridSize, rows * gridSize);
+  let canvasX = (windowWidth - width) / 2;
+  let canvasY = (windowHeight - height) / 2;
+  Canvas.position(canvasX, canvasY);
+}
+function setupControls() {
+  let rowsInput = select("#rowsInput");
+  let colsInput = select("#colsInput");
+  let keyInput = select("#keyInput");
+  let colorPicker = select("#colorPicker");
+  keyInput.value(selectedKey);
+  colorPicker.value(colorData[selectedKey] || currentColor);
+  rowsInput.input(updateGrid);
+  colsInput.input(updateGrid);
+  keyInput.input(function () {
+    selectedKey = keyInput.value().charAt(0);
+    if (colorData[selectedKey]) {
+      colorPicker.value(colorData[selectedKey]);
+    } else {
+      colorData[selectedKey] = "#FFFFFF"; 
+      colorPicker.value("#FFFFFF"); 
+    }
+  });
+  colorPicker.input(function () {
+    currentColor = colorPicker.value();
+    colorData[selectedKey] = currentColor;
+  });
+}
+function updateGrid() {
+  const newCols = select("#colsInput").value();
+  const newRows = select("#rowsInput").value();
+  const oldCols = cols;
+  const oldRows = rows;
+  const tempGridData = [];
+  for (let i = 0; i < newRows; i++) {
+    tempGridData.push([]);
+    for (let j = 0; j < newCols; j++) {
+      if (i < oldRows && j < oldCols) {
+        tempGridData[i][j] = gridData[i][j];
+      } else {
+        tempGridData[i][j] = ".";
+      }
+    }
   }
+  cols = newCols;
+  rows = newRows;
+  gridData = tempGridData;
+  resizeCanvas(cols * gridSize, rows * gridSize);
+  let canvasX = (windowWidth - width) / 2;
+  let canvasY = (windowHeight - height) / 2;
+  Canvas.position(canvasX, canvasY);
 }
 function draw() {
   background(220);
-  // Draw grid
-  for (let x = 0; x < gridWidth; x++) {
-    for (let y = 0; y < gridHeight; y++) {
-      let tileIndex = x + y * gridWidth;
-      let tileCenter = createVector(x, y)
-        .mult(gridSize)
-        .add(gridSize / 2, gridSize / 2);
-      if (isSelectedTile(x, y)) {
-        fill(200);
-      } else {
-        fill(tileColors[tileIndex]);
-      }
-      rect(
-        tileCenter.x - gridSize / 2,
-        tileCenter.y - gridSize / 2,
-        gridSize,
-        gridSize
-      );
+  for (let i = 0; i < rows; i++) {
+    for (let j = 0; j < cols; j++) {
+      let x = j * gridSize;
+      let y = i * gridSize;
+      stroke(10);
+      strokeWeight(1);
+      let fillColor = colorData[gridData[i][j]] || color(255);
+      fill(fillColor);
+      rect(x, y, gridSize, gridSize);
       fill(0);
-      text(inputText[tileIndex] || ".", tileCenter.x, tileCenter.y);
+      textSize(gridSize * 0.8);
+      textAlign(CENTER, CENTER);
+      stroke(255);
+      strokeWeight(1);
+      text(gridData[i][j], x + gridSize / 2, y + gridSize / 2);
     }
   }
-  // Draw cursor
-  if (frameCount % 60 < 30 && !isShiftDown && selectedTiles.length > 0) {
-    let cursorPositionInPixels = selectedTiles[0]
-      .copy()
-      .mult(gridSize)
-      .add(padding + gridSize / 2, padding + gridSize / 2);
-    stroke(0);
-    line(
-      cursorPositionInPixels.x - gridSize / 2,
-      cursorPositionInPixels.y,
-      cursorPositionInPixels.x + gridSize / 2,
-      cursorPositionInPixels.y
-    );
-  }
-  if (keyIsDown(CONTROL)) {
-    let clickedTile = createVector(
-      floor(mouseX / gridSize),
-      floor(mouseY / gridSize)
-    );
-    if (
-      clickedTile.x >= 0 &&
-      clickedTile.x < gridWidth &&
-      clickedTile.y >= 0 &&
-      clickedTile.y < gridHeight
-    ) {
-      if (isSelectedTile(clickedTile.x, clickedTile.y)) {
-        // removeSelectedTile(clickedTile.x, clickedTile.y);
-      } else {
-        addSelectedTile(clickedTile.x, clickedTile.y);
-      }
-    }
+  if (
+    mouseX >= 0 &&
+    mouseY >= 0 &&
+    mouseX < cols * gridSize &&
+    mouseY < rows * gridSize
+  ) {
+    let col = floor(mouseX / gridSize);
+    let row = floor(mouseY / gridSize);
+    noFill();
+    stroke(234, 16, 78);
+    strokeWeight(3);
+    rect(col * gridSize, row * gridSize, gridSize, gridSize);
+    strokeWeight(1);
   }
 }
 function mouseClicked() {
-  let clickedTile = createVector(
-    floor(mouseX / gridSize),
-    floor(mouseY / gridSize)
-  );
-  if (
-    clickedTile.x >= 0 &&
-    clickedTile.x < gridWidth &&
-    clickedTile.y >= 0 &&
-    clickedTile.y < gridHeight
-  ) {
-    if (isShiftDown) {
-      if (isSelectedTile(clickedTile.x, clickedTile.y)) {
-        removeSelectedTile(clickedTile.x, clickedTile.y);
-      } else {
-        addSelectedTile(clickedTile.x, clickedTile.y);
-      }
-    } else {
-      selectedTiles = [clickedTile.copy()];
+  if (mouseButton === LEFT) {
+    let col = floor(mouseX / gridSize);
+    let row = floor(mouseY / gridSize);
+    if (col >= 0 && col < cols && row >= 0 && row < rows) {
+      gridData[row][col] = selectedKey;
     }
   }
 }
-function keyTyped() {
-  if (selectedTiles.length > 0) {
-    if (isShiftDown) {
-      if (keyCode === BACKSPACE) {
-        for (let tile of selectedTiles) {
-          let tileIndex = tile.x + tile.y * gridWidth;
-          if (inputText[tileIndex].length > 0) {
-            inputText[tileIndex] = inputText[tileIndex].substring(
-              0,
-              inputText[tileIndex].length - 1
-            );
-          } else {
-            moveCursorBackward();
-          }
-        }
-      } else if (keyCode !== ENTER) {
-        for (let tile of selectedTiles) {
-          let tileIndex = tile.x + tile.y * gridWidth;
-          inputText[tileIndex] = key;
-          tileColors[tileIndex] = getColorFromKey(key);
-          moveCursorForward();
-        }
-      }
-    } else {
-      let tileIndex = selectedTiles[0].x + selectedTiles[0].y * gridWidth;
-      if (keyCode === BACKSPACE) {
-        if (inputText[tileIndex].length > 0) {
-          inputText[tileIndex] = inputText[tileIndex].substring(
-            0,
-            inputText[tileIndex].length - 1
-          );
-        } else {
-          moveCursorBackward();
-        }
-      } else if (
-        keyCode !== ENTER &&
-        inputText.join("").length < maxInputLength
-      ) {
-        for (let tile of selectedTiles) {
-          let tileIndex = tile.x + tile.y * gridWidth;
-          inputText[tileIndex] = key;
-          tileColors[tileIndex] = getColorFromKey(key);
-          moveCursorForward();
-        }
-      }
-    }
-    if (selectedTiles.length > 1) {
-      selectedTiles = [];
-    }
-  }
-}
-function keyPressed() {
-  if (keyCode === SHIFT) {
-    isShiftDown = true;
-  }
-  if (keyIsDown(TAB)) {
-    logGridString();
-  }
-}
-function keyReleased() {
-  if (keyCode === SHIFT) {
-    isShiftDown = false;
-  }
-}
-function moveCursorForward() {
-  let currentIndex = selectedTiles[0].x + selectedTiles[0].y * gridWidth;
 
-  if (currentIndex < maxInputLength - 1) {
-    selectedTiles[0].x++;
-    if (selectedTiles[0].x >= gridWidth) {
-      selectedTiles[0].x = 0;
-      selectedTiles[0].y++;
+function mouseDragged() {
+  if (mouseButton === LEFT) {
+    let col = floor(mouseX / gridSize);
+    let row = floor(mouseY / gridSize);
+    if (col >= 0 && col < cols && row >= 0 && row < rows) {
+      gridData[row][col] = selectedKey;
     }
   }
 }
-function moveCursorBackward() {
-  let currentIndex = selectedTiles[0].x + selectedTiles[0].y * gridWidth;
-
-  if (currentIndex > 0) {
-    selectedTiles[0].x--;
-    if (selectedTiles[0].x < 0) {
-      selectedTiles[0].x = gridWidth - 1;
-      selectedTiles[0].y--;
-    }
+function handleKeyPress(event) {
+  const key = event.key;
+  if (key.length === 1) {
+    selectedKey = key;
+    document.getElementById("keyInput").value = key;
+    let colorPicker = select("#colorPicker");
+    colorPicker.value(colorData[selectedKey] || "#FFFFFF");
   }
 }
-function logGridString() {
+function copyTileMap() {
   let gridString = "";
-  for (let y = 0; y < gridHeight; y++) {
-    let line = "";
-    for (let x = 0; x < gridWidth; x++) {
-      let tileIndex = x + y * gridWidth;
-      line += inputText[tileIndex] || ".";
-    }
-    gridString += `"${line}",\n`;
+  for (let i = 0; i < rows; i++) {
+    let rowData = '"' + gridData[i].join("") + '",';
+    gridString += rowData + "\n";
   }
-  // Create a textarea element to hold the grid string
-  let textarea = document.createElement("textarea");
-  textarea.value = `[\n${gridString}]`;
-  // Append the textarea to the document body
+  console.log(gridString);
+  copyToClipboard(gridString);
+  event.preventDefault();
+}
+function handleTabPress(event) {
+  if (event.keyCode === 9) {
+    let gridString = "";
+    for (let i = 0; i < rows; i++) {
+      let rowData = '"' + gridData[i].join("") + '",';
+      gridString += rowData + "\n";
+    }
+    console.log(gridString);
+    copyToClipboard(gridString);
+    event.preventDefault();
+  }
+}
+
+function copyToClipboard(text) {
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.style.position = "fixed";
   document.body.appendChild(textarea);
-  // Select and copy the contents of the textarea
   textarea.select();
   document.execCommand("copy");
-  // Remove the textarea from the document body
   document.body.removeChild(textarea);
-  console.log(`[\n${gridString}]`);
 }
-function isSelectedTile(x, y) {
-  for (let tile of selectedTiles) {
-    if (tile.x === x && tile.y === y) {
-      return true;
+function setGridFromLog() {
+  let logTextArea = select("#copyPaste");
+  let logData = logTextArea.value().trim();
+  let logLines = logData.split("\n");
+  let newRows = logLines.length;
+  let newCols = 0;
+  for (let i = 0; i < newRows; i++) {
+    let rowData = logLines[i].trim();
+    rowData = rowData.replace(/["',]/g, "");
+    if (rowData.length > newCols) {
+      newCols = rowData.length;
     }
   }
-  return false;
-}
-function addSelectedTile(x, y) {
-  selectedTiles.push(createVector(x, y));
-}
-function removeSelectedTile(x, y) {
-  for (let i = 0; i < selectedTiles.length; i++) {
-    if (selectedTiles[i].x === x && selectedTiles[i].y === y) {
-      selectedTiles.splice(i, 1);
-      break;
-    }
-  }
-}
+  if (newRows >= 1 && newCols >= 1) {
+    const tempGridData = [];
+    for (let i = 0; i < newRows; i++) {
+      let rowData = logLines[i].trim();
+      rowData = rowData.replace(/["',]/g, "");
+      let rowArray = rowData.split("");
 
+      while (rowArray.length < newCols) {
+        rowArray.push(".");
+      }
+      tempGridData.push(rowArray);
+    }
+    cols = newCols;
+    rows = newRows;
+    gridData = tempGridData;
+    select("#rowsInput").value(rows);
+    select("#colsInput").value(cols);
+    resizeCanvas(cols * gridSize, rows * gridSize);
+    let canvasX = (windowWidth - width) / 2;
+    let canvasY = (windowHeight - height) / 2;
+    Canvas.position(canvasX, canvasY);
+    redraw();
+  }
+}
