@@ -134,3 +134,55 @@
         font-weight: bold;
         letter-spacing: 0.5px;
       }
+
+      button:hover {
+        background-color: rgb(78, 174, 233, 1);
+        color: rgb(255, 255, 255, 1);
+        border: 2px solid rgb(234, 16, 78, 1);
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="headerBackground">
+      <!-- No child elements for the new header -->
+    </div>
+    <div id="header">
+      <div class="header-item" id="controls">
+        <label for="rowsInput">Rows:</label>
+        <input type="number" id="rowsInput" value="23" min="1" />
+        <label for="colsInput">Columns:</label>
+        <input type="number" id="colsInput" value="40" min="1" />
+      </div>
+      <div class="header-item color-picker-container">
+        <span>Tile ID:</span>
+        <input type="text" id="keyInput" value="." maxlength="1" />
+        <span>Color:</span>
+        <input
+          type="color"
+          id="colorPicker"
+          class="color-picker"
+          value="#FFFFFF"
+          style="appearance: none; padding: 0; margin-right: 5px;"
+        />
+      </div>
+      <div
+        class="header-item"
+        id="copyPasteContainer"
+        style="margin-right: 5px;"
+      >
+        <textarea
+          id="copyPaste"
+          rows="1"
+          placeholder="Paste tile map here"
+        ></textarea>
+        <button onclick="setGridFromLog()" style="margin-right: 5px;">
+          Upload
+        </button>
+        <button onclick="copyTileMap()">Copy sketch to clipboard</button>
+      </div>
+    </div>
+    <div id="container"></div>
+    <script src="sketch.js" defer></script>
+  </body>
+</html>
