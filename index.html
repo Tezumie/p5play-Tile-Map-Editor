@@ -3,131 +3,160 @@
   <head>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <style>
+      body {
+        margin: 0;
+        padding: 0;
+      }
+
+      #header {
+        position: fixed;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%); /* Center the header horizontally */
+        width: calc(70% - 80px); /* Subtract 40px for left and right padding */
+        font-family: Arial, sans-serif;
+        font-size: 20px;
+        font-weight: bold;
+        letter-spacing: 0.5px;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        align-items: center;
+        padding: 20px;
+        color: rgb(78, 174, 233, 1);
+        background-color: rgb(19, 21, 22, 1);
+        height: 60px;
+        min-height: 60px;
+        border-radius: 10px;
+        overflow-x: auto;
+        margin: 20px;
+        z-index: 1; 
+      }
+
+      #headerBackground {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        font-family: Arial, sans-serif;
+        font-size: 20px;
+        font-weight: bold;
+        letter-spacing: 0.5px;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        align-items: center;
+        padding: 20px;
+        color: rgb(255, 255, 255, 1);
+        background-color: rgb(0, 0, 0,0.8);
+        height: 60px;
+        min-height: 60px;
+        overflow-x: auto;
+        z-index: 1;
+      }
+
+      .header-item {
+        display: flex;
+        align-items: center;
+        margin-right: 5px;
+        margin-left: 5px;
+      }
+
+      #controls label,
+      .color-picker-container label {
+        margin-right: 5px;
+        margin-left: 5px;
+      }
+
+      #rowsInput,
+      #colsInput,
+      #keyInput {
+        width: 40px;
+        margin-right: 5px;
+        margin-left: 5px;
+      }
+
+      .color-picker-container {
+        flex: 1;
+      }
+
+      .color-picker {
+        min-width: 20px;
+        height: 25px;
+        cursor: pointer;
+        margin-right: 5px;
+        margin-left: 5px;
+      }
+
+      #copyPasteContainer {
+        display: flex;
+        align-items: center;
+        max-width: 500px;
+        min-width: 200px;
+        padding: 5px;
+        margin-right: 5px;
+        margin-left: 5px;
+      }
+
+      #copyPaste {
+        flex: 1;
+        max-height: 20px;
+        margin-right: 5px;
+        margin-left: 5px;
+      }
+
+      #container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 100px;
+        margin-right: 5px;
+        margin-left: 5px;
+      }
+
+      canvas {
+        margin-top: 20px;
+        overflow-x: auto;
+        position: relative; /* Add position relative to the canvas */
+        z-index: 0; /* Set a lower z-index for the canvas */
+      }
 
       button {
-        background-color: rgb(234, 16, 78,1);
-        color: rgb(255,255,255, 1);
+        background-color: rgb(234, 16, 78, 1);
+        color: rgb(255, 255, 255, 1);
         border: none;
         padding: 8px 16px;
         border-radius: 5px;
         transition: background-color 0.3s, color 0.3s, border 0.3s;
-                      font-family: Arial, sans-serif;
-              font-size: 10px;
-              font-weight: bold;
-              letter-spacing: 0.5px;
+        font-family: Arial, sans-serif;
+        font-size: 10px;
+        font-weight: bold;
+        letter-spacing: 0.5px;
       }
 
       button:hover {
         background-color: rgb(78, 174, 233, 1);
-         color: rgb(255,255,255, 1);
-        border: 2px solid rgb(234, 16, 78,1);
-         cursor: pointer;
+        color: rgb(255, 255, 255, 1);
+        border: 2px solid rgb(234, 16, 78, 1);
+        cursor: pointer;
       }
-                   #header {
-              font-family: Arial, sans-serif;
-              font-size: 20px;
-              font-weight: bold;
-              letter-spacing: 0.5px;
-              display: flex;
-              flex-direction: row;
-              justify-content: center;
-              align-items: center;
-              padding: 20px;
-              color: rgb(78, 174, 233, 1);
-              background-color: rgb(19, 21, 22, 1);
-              width: 60%;
-                     height: 60px;
-              margin: 0 auto;
-              margin-top: 20px;
-              border-radius: 10px;
-            }
-
-            #controls {
-              display: flex;
-              align-items: center;
-              padding: 5px;
-            }
-
-            #controls label {
-              margin-right: 2px;
-              margin-left: 5px;
-            }
-
-            #rowsInput,
-            #colsInput,
-            #keyInput {
-              width: 60px;
-              margin-left: 2px;
-            }
-
-            .color-picker-container {
-              flex: 1;
-              max-height: 20px;
-
-            }
-
-            .color-picker-container label {
-              margin-left: 2px;
-              max-height: 20px;
-
-            }
-
-            .color-picker {
-              min-width: 100px;
-              margin-left: 2px;
-              max-height: 20px;
-              cursor: pointer;
-            }
-
-            #copyPasteContainer {
-              flex: 1;
-              display: flex;
-              flex-direction: row;
-              align-items: flex-start;
-              max-width: 500px;
-              min-width: 200px;
-              padding: 5px;
-            }
-
-            #copyPaste {
-              width: 100%;
-              max-height: 20px;
-            }
-                      #container {
-                        display: flex;
-                        justify-content: center;
-                        align-items: center;
-                        margin-top: 20px;
-                      }
-                      canvas {
-                        display: flex;
-                        justify-content: center;
-                        align-items: center;
-                        margin-top: 20px;
-                      }
     </style>
   </head>
   <body>
+    <div id="headerBackground">
+      <!-- No child elements for the new header -->
+    </div>
     <div id="header">
-      <div id="controls">
+      <div class="header-item" id="controls">
         <label for="rowsInput">Rows:</label>
         <input type="number" id="rowsInput" value="23" min="1" />
         <label for="colsInput">Columns:</label>
         <input type="number" id="colsInput" value="40" min="1" />
       </div>
-      <div
-        class="color-picker-container"
-        style="display: flex; align-items: center; margin-left: 10px;"
-      >
-        <span style="margin-right: 0px;">Tile ID:</span>
-        <input
-          type="text"
-          id="keyInput"
-          value="."
-          maxlength="1"
-          style="margin-right: 5px;"
-        />
-        <span style="margin-right: 0px;">Color:</span>
+      <div class="header-item color-picker-container">
+        <span>Tile ID:</span>
+        <input type="text" id="keyInput" value="." maxlength="1" />
+        <span>Color:</span>
         <input
           type="color"
           id="colorPicker"
@@ -136,24 +165,24 @@
           style="appearance: none; padding: 0; margin-right: 5px;"
         />
       </div>
-      <div id="copyPasteContainer" style="display: flex; align-items: center;">
+      <div
+        class="header-item"
+        id="copyPasteContainer"
+        style="margin-right: 5px;"
+      >
         <textarea
           id="copyPaste"
           rows="1"
           placeholder="Paste tile map here"
         ></textarea>
-        <button onclick="setGridFromLog()" style="margin-left: 5px;">
+        <button onclick="setGridFromLog()" style="margin-right: 5px;">
           Upload
         </button>
-        <button
-          onclick="copyTileMap()"
-          style="margin-left: 35px; width: 420px;"
-        >
-          Copy sketch to clipboard
-        </button>
+        <button onclick="copyTileMap()">Copy sketch to clipboard</button>
       </div>
     </div>
     <div id="container"></div>
     <script src="sketch.js" defer></script>
   </body>
 </html>
+
