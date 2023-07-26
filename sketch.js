@@ -21,12 +21,10 @@ function windowResized() {
   resizeCanvas(cols * gridSize, rows * gridSize);
   let canvasX = (windowWidth - width) / 2;
   let canvasY = (windowHeight - height) / 2;
-  if (width > windowWidth) {
+  if (width > window.innerWidth) {
     canvasX = 0;
   }
-  if (height > windowHeight - 220) {
-    canvasY = 120;
-  }
+  canvasY = 120;
   Canvas.position(canvasX, canvasY);
 }
 function setupControls() {
