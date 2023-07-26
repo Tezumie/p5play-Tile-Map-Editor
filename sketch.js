@@ -9,9 +9,7 @@ function setup() {
   Canvas = createCanvas(500, 500);
   Canvas.style("position", "absolute");
   Canvas.style("object-fit", "contain");
-  let canvasX = (windowWidth - width) / 2;
-  let canvasY = (windowHeight - height) / 2;
-  Canvas.position(canvasX, canvasY);
+  windowResized();
   Canvas.style("border", " 3px solid black");
   Canvas.style("border-color", color(234, 16, 78));
   updateGrid();
@@ -23,6 +21,12 @@ function windowResized() {
   resizeCanvas(cols * gridSize, rows * gridSize);
   let canvasX = (windowWidth - width) / 2;
   let canvasY = (windowHeight - height) / 2;
+  if (width > windowWidth) {
+    canvasX = 0;
+  }
+  if (height > windowHeight - 220) {
+    canvasY = 120;
+  }
   Canvas.position(canvasX, canvasY);
 }
 function setupControls() {
@@ -39,8 +43,8 @@ function setupControls() {
     if (colorData[selectedKey]) {
       colorPicker.value(colorData[selectedKey]);
     } else {
-      colorData[selectedKey] = "#FFFFFF"; 
-      colorPicker.value("#FFFFFF"); 
+      colorData[selectedKey] = "#FFFFFF";
+      colorPicker.value("#FFFFFF");
     }
   });
   colorPicker.input(function () {
@@ -68,9 +72,7 @@ function updateGrid() {
   rows = newRows;
   gridData = tempGridData;
   resizeCanvas(cols * gridSize, rows * gridSize);
-  let canvasX = (windowWidth - width) / 2;
-  let canvasY = (windowHeight - height) / 2;
-  Canvas.position(canvasX, canvasY);
+  windowResized();
 }
 function draw() {
   background(220);
@@ -197,9 +199,7 @@ function setGridFromLog() {
     select("#rowsInput").value(rows);
     select("#colsInput").value(cols);
     resizeCanvas(cols * gridSize, rows * gridSize);
-    let canvasX = (windowWidth - width) / 2;
-    let canvasY = (windowHeight - height) / 2;
-    Canvas.position(canvasX, canvasY);
+    windowResized();
     redraw();
   }
 }
