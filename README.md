@@ -4,6 +4,15 @@ A map editor that outputs an array formatted for p5play tileset maps.
 
 link to use the editor: https://tezumie.github.io/p5play-Tile-Map-Editor/
 
+Input:
+
+![tilemapexample](https://github.com/Tezumie/p5play-Tile-Map-Editor/assets/102488626/4c8ae71c-b8d0-4e93-bcfe-6a3e22880593)
+
+Output:
+
+![tilemapex](https://github.com/Tezumie/p5play-Tile-Map-Editor/assets/102488626/aaeca398-b8f3-46a0-8627-584d99834f6b)
+
+
 CONTROLS:
 
 Size: The size of your grid tiles. This wont affect the tilemap,
@@ -56,11 +65,5 @@ Copy palette: Copy the string for the palette you have made to your clipboard.
 
 X : Clear the canvas.
 
-Input:
 
-![tilemapexample](https://github.com/Tezumie/p5play-Tile-Map-Editor/assets/102488626/4c8ae71c-b8d0-4e93-bcfe-6a3e22880593)
-
-Output:
-
-![tilemapex](https://github.com/Tezumie/p5play-Tile-Map-Editor/assets/102488626/aaeca398-b8f3-46a0-8627-584d99834f6b)
 
