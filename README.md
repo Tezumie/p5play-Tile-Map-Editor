@@ -6,7 +6,7 @@ link to use the editor: https://tezumie.github.io/p5play-Tile-Map-Editor/
 
 CONTROLS:
 
- Size: The size of your grid tiles. This wont affect the tilemap,
+Size: The size of your grid tiles. This wont affect the tilemap,
 
  just visuals while editing.
 
