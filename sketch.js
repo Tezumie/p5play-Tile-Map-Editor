@@ -1,9 +1,24 @@
 let cols, rows;
 let gridSize = 30;
 let gridData = [];
-let selectedKey = ".";
+let selectedKey = "g";
 let colorData = {};
-let currentColor = "#FFFFFF";
+let currentColor = "#008000";
+let helpMenuVisible = false;
+let displayTileId = true;
+function toggleGridId() {
+  if (displayTileId) {
+    displayTileId = false;
+  } else {
+    displayTileId = true;
+  }
+}
+function toggleHelpMenu() {
+  const helpMenu = document.getElementById("helpMenu");
+  helpMenuVisible = !helpMenuVisible;
+  helpMenu.style.display = helpMenuVisible ? "block" : "none";
+}
+
 function setup() {
   document.body.style.backgroundColor = color(0);
   Canvas = createCanvas(500, 500);
@@ -16,6 +31,7 @@ function setup() {
   setupControls();
   document.addEventListener("keydown", handleKeyPress);
   document.addEventListener("keydown", handleTabPress);
+  setDefaultColors();
 }
 function windowResized() {
   resizeCanvas(cols * gridSize, rows * gridSize);
@@ -27,32 +43,86 @@ function windowResized() {
   canvasY = 120;
   Canvas.position(canvasX, canvasY);
 }
+function setDefaultColors() {
+  const defaultColors = {
+    a: "#00FFFF",
+    b: "#000000",
+    c: "#DC143C",
+    d: "#9400D3",
+    e: "#FFDAB9",
+    f: "#808000",
+    g: "#008000",
+    h: "#FF69B4",
+    i: "#4B0082",
+    j: "#000080",
+    k: "#F0E68C",
+    l: "#00FF00",
+    m: "#FF00FF",
+    n: "#A52A2A",
+    o: "#FFA500",
+    p: "#FFC0CB",
+    q: "#40E0D0",
+    r: "#FF0000",
+    s: "#87CEEB",
+    t: "#D2B48C",
+    u: "#0000FF",
+    v: "#EE82EE",
+    w: "#FFFFFF",
+    x: "#FFD700",
+    y: "#FFFF00",
+    z: "#808080",
+  };
+  for (
+    let letter = "a";
+    letter <= "z";
+    letter = String.fromCharCode(letter.charCodeAt(0) + 1)
+  ) {
+    if (!colorData[letter]) {
+      colorData[letter] = defaultColors[letter] || "#FFFFFF";
+    }
+  }
+}
 function setupControls() {
+  let gridSizeInput = select("#gridSizeInput");
   let rowsInput = select("#rowsInput");
   let colsInput = select("#colsInput");
   let keyInput = select("#keyInput");
   let colorPicker = select("#colorPicker");
   keyInput.value(selectedKey);
-  colorPicker.value(colorData[selectedKey] || currentColor);
+  colorPicker.value(colorData[selectedKey] || currentColor); // Set the color picker value directly to the hex value
+  gridSizeInput.input(updateGrid);
   rowsInput.input(updateGrid);
   colsInput.input(updateGrid);
   keyInput.input(function () {
     selectedKey = keyInput.value().charAt(0);
-    if (colorData[selectedKey]) {
-      colorPicker.value(colorData[selectedKey]);
-    } else {
-      colorData[selectedKey] = "#FFFFFF";
-      colorPicker.value("#FFFFFF");
+    if (!colorData[selectedKey]) {
+      colorData[selectedKey] = "#FFFFFF"; // Set a default hex value
     }
+    colorPicker.value(colorData[selectedKey]); // Set the color picker value directly to the hex value
   });
   colorPicker.input(function () {
     currentColor = colorPicker.value();
-    colorData[selectedKey] = currentColor;
+    colorData[selectedKey] = currentColor; // Store the hex value directly in colorData
   });
 }
-function updateGrid() {
+function clearGridId() {
+  const newCols = cols;
+  const newRows = rows;
+  const tempGridData = [];
+  for (let i = 0; i < newRows; i++) {
+    tempGridData.push([]);
+    for (let j = 0; j < newCols; j++) {
+      tempGridData[i][j] = ".";
+    }
+  }
+  gridData = tempGridData;
+  redraw();
+}
+
+function updateGrid(clearGrid) {
   const newCols = select("#colsInput").value();
   const newRows = select("#rowsInput").value();
+  gridSize = select("#gridSizeInput").value();
   const oldCols = cols;
   const oldRows = rows;
   const tempGridData = [];
@@ -72,6 +142,13 @@ function updateGrid() {
   resizeCanvas(cols * gridSize, rows * gridSize);
   windowResized();
 }
+function isColorTooDark(color) {
+  let r = red(color);
+  let g = green(color);
+  let b = blue(color);
+  let brightnessValue = r * 0.299 + g * 0.587 + b * 0.114;
+  return brightnessValue < 80;
+}
 function draw() {
   background(220);
   for (let i = 0; i < rows; i++) {
@@ -83,12 +160,14 @@ function draw() {
       let fillColor = colorData[gridData[i][j]] || color(255);
       fill(fillColor);
       rect(x, y, gridSize, gridSize);
-      fill(0);
+      let textColor = isColorTooDark(fillColor) ? color(255) : color(0);
+      fill(textColor);
+      textFont("Arial");
       textSize(gridSize * 0.8);
       textAlign(CENTER, CENTER);
-      stroke(255);
-      strokeWeight(1);
-      text(gridData[i][j], x + gridSize / 2, y + gridSize / 2);
+      if (displayTileId) {
+        text(gridData[i][j], x + gridSize / 2, y + gridSize / 2);
+      }
     }
   }
   if (
@@ -134,6 +213,46 @@ function handleKeyPress(event) {
     colorPicker.value(colorData[selectedKey] || "#FFFFFF");
   }
 }
+
+function copyPalette() {
+  let paletteData = {};
+  for (let key in colorData) {
+    if (colorData.hasOwnProperty(key)) {
+      let colorValue = colorData[key];
+      paletteData[key] = colorValue;
+    }
+  }
+
+  let paletteString = JSON.stringify(paletteData, null, 2);
+  copyToClipboard(paletteString);
+}
+
+function setPaletteFromLog() {
+  let logTextArea = select("#copyPastePalette");
+  let logData = logTextArea.value().trim();
+
+  // Remove trailing commas using regular expression
+  logData = logData.replace(/,\s*([\]}])/g, "$1");
+
+  try {
+    const paletteData = JSON.parse(logData);
+    if (typeof paletteData === "object") {
+      for (let key in paletteData) {
+        let colorValue = paletteData[key];
+        if (typeof colorValue === "string" && colorValue.charAt(0) === "#") {
+          colorData[key] = colorValue;
+        }
+      }
+      redraw();
+    } else {
+      console.error("Invalid palette data format.");
+    }
+  } catch (error) {
+    console.error("Error parsing palette data:", error);
+  }
+}
+
+/////////////////////////////////
 function copyTileMap() {
   let gridString = "";
   for (let i = 0; i < rows; i++) {
@@ -156,7 +275,6 @@ function handleTabPress(event) {
     event.preventDefault();
   }
 }
-
 function copyToClipboard(text) {
   const textarea = document.createElement("textarea");
   textarea.value = text;
