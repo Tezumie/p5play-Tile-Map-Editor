@@ -61,7 +61,7 @@ Paste palette here: you can upload a palette map by copy and pasting it in this 
 
 Copy palette: Copy the string for the palette you have made to your clipboard.
 
-● ● ● : Toggle the Tile ID display, great for making pixel art.
+ID+- : Toggle the Tile ID display, great for making pixel art.
 
 X : Clear the canvas.
 
