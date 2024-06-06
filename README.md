@@ -66,4 +66,7 @@ ID+- : Toggle the Tile ID display, great for making pixel art.
 X : Clear the canvas.
 
 
+### Support
+
+To support this project, please consider [becoming a patron](https://www.patreon.com/aijscodeeditor).
 
