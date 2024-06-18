@@ -17,6 +17,9 @@ This tool allows you to create pixel art and convert it into a format compatible
 - **Pixel Data Conversion**: Converts your pixel art into a format compatible with p5play Tile and Sprite functions.
 - **Pan and Zoom**: Navigate your canvas easily with pan and zoom functionalities.
 
+It also works in reverse, you can type or paste in your tilemap strings and it will convert them into an image.
+*NOTE: It will only update from typing or pasting once the dimensions of ur string/pasted tilemap are accurate for the canvas set size*
+
 ## Live Demo
 
 You can access the live version of the Tile Map Editor [here](https://tezumie.github.io/p5play-Tile-Map-Editor/). 
