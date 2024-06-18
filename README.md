@@ -8,6 +8,7 @@ This tool allows you to create pixel art and convert it into a format compatible
 ## Features
 
 - **Drawing Tools**: Choose from three different tools—Pen, Line, and Fill—to create your pixel art.
+- **Erase**: Right click with the fill or pen tool to erase.
 - **Undo/Redo**: Easily undo or redo your actions with the click of a button.
 - **Image Upload**: Upload an image, and the editor will automatically convert it into pixel art format.
 - **Download**: Save your creations by downloading them as PNG images, or copy the string in p5play format.
@@ -21,6 +22,8 @@ This tool allows you to create pixel art and convert it into a format compatible
 You can access the live version of the Tile Map Editor [here](https://tezumie.github.io/p5play-Tile-Map-Editor/). 
 
 Enjoy creating amazing pixel art and integrating it seamlessly with p5play!
+
+![editor img](![Capture](https://github.com/Tezumie/p5play-Tile-Map-Editor/assets/102488626/4e596f48-4031-4499-bea7-c7837669263b)
 
 ## Contributing
 
