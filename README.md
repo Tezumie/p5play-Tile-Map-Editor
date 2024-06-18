@@ -1,72 +1,41 @@
-# p5play-Tile-Map-Editor
+[![License: CC BY-NC 4.0](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/)
+![editor img](cover.png)
 
-A map editor that outputs an array formatted for p5play tileset maps.
+# Tile Map and Pixel Art Editor for p5play
 
-link to use the editor: https://tezumie.github.io/p5play-Tile-Map-Editor/
+This tool allows you to create pixel art and convert it into a format compatible with [p5play's](https://p5play.org/) Tile and Sprite functions. The editor is equipped with a variety of features to enhance your creative process.
 
-Input:
+## Features
 
-![tilemapexample](https://github.com/Tezumie/p5play-Tile-Map-Editor/assets/102488626/4c8ae71c-b8d0-4e93-bcfe-6a3e22880593)
+- **Drawing Tools**: Choose from three different tools—Pen, Line, and Fill—to create your pixel art.
+- **Undo/Redo**: Easily undo or redo your actions with the click of a button.
+- **Image Upload**: Upload an image, and the editor will automatically convert it into pixel art format.
+- **Download**: Save your creations by downloading them as PNG images, or copy the string in p5play format.
+- **Color Palette**: Customize your colors using a color picker or select from a default palette.
+- **Dynamic Canvas**: Set custom canvas dimensions to suit your needs.
+- **Pixel Data Conversion**: Converts your pixel art into a format compatible with p5play Tile and Sprite functions.
+- **Pan and Zoom**: Navigate your canvas easily with pan and zoom functionalities.
 
-Output:
+## Live Demo
 
-![tilemapex](https://github.com/Tezumie/p5play-Tile-Map-Editor/assets/102488626/aaeca398-b8f3-46a0-8627-584d99834f6b)
+You can access the live version of the Tile Map Editor [here](https://tezumie.github.io/p5play-Tile-Map-Editor/). 
 
+Enjoy creating amazing pixel art and integrating it seamlessly with p5play!
 
-CONTROLS:
+## Contributing
 
-Size: The size of your grid tiles. This wont affect the tilemap,
+If you'd like to contribute to the project, feel free to fork the repository and submit a pull request. Contributions are welcome!
 
- just visuals while editing.
+## License
 
-Rows: The height of your tile map.
-
-Columns: The width of your tile map.
-
-Tile ID: Press any Key to set the current Tile ID (you don't need to click the box),
-
- when you click or hold left mouse button you will draw this key.
-
-Color: Choose a color for your tile, these are stored and can be copied as a palette.
-
-Paste tile map here: you can upload a tile map by copy and pasting it in this format.
-
- Try it out, copy paste this 3x3 tile map into the "Paste tile map here" box,
-
- than press upload tile map.
-
-    "...",
-    "abc",
-    "cab",
-      
-
-Copy tile map: Copy the string for the tilemap you have drawn to your clipboard.
-
-Paste palette here: you can upload a palette map by copy and pasting it in this format.
-
- Try it out, copy paste this lospec bumblebit palette into the "Paste palette here" box,
-
- than press upload palette, than press a,b,or c to choose a color.
-
-      {
-
-      "a": "#272946",
-
-      "b": "#eda031",
-
-      "c": "#e7ffee",
-
-      }
-    
-
-Copy palette: Copy the string for the palette you have made to your clipboard.
-
-ID+- : Toggle the Tile ID display, great for making pixel art.
-
-X : Clear the canvas.
+This project is released under the CC BY-NC license. See the LICENSE file for details.
 
 
-### Support
+## Support
 
 To support this project, please consider [becoming a patron](https://www.patreon.com/aijscodeeditor).
+
+## Contact
+
+For any questions or feedback, please reach out on Discord or join our community: https://discord.com/invite/eW7MbvXZbY
 
