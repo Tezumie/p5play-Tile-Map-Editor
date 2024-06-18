@@ -1,7 +1,460 @@
-html, body {
-  margin: 0;
-  padding: 0;
+:root {
+    --color-background: #f5f5f5;
+    --color-white: #ffffff;
+    --color-border: #ddd;
+    --color-shadow-light: rgba(0, 0, 0, 0.1);
+    --color-shadow-dark: rgba(0, 0, 0, 0.16);
+    --color-scrollbar-thumb: #888;
+    --color-scrollbar-thumb-hover: #555;
+    --color-button: #1e9aff;
+    --color-button-hover: #168dee;
+    --color-active-background: #1e9aff;
+    --color-active-color: white;
+
+    --font-family: Arial, sans-serif;
+    --font-size-default: 14px;
+    --font-size-small: 10px;
+    --font-size-label: 16px;
 }
-canvas {
-  display: block;
+
+@font-face {
+    font-family: "NerdFontSymbols";
+    src: url("NerdFontsSymbolsOnly/SymbolsNerdFontMono-Regular.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+}
+
+#linePreview {
+    position: absolute;
+    height: 1px;
+    background-color: black;
+    pointer-events: none;
+    display: none;
+}
+
+#cursor {
+    position: absolute;
+    box-sizing: border-box;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    background-color: #168dee;
+}
+
+body {
+    display: flex;
+    height: 100vh;
+    margin: 0;
+    font-family: var(--font-family);
+    background-color: var(--color-background);
+}
+
+#toolbar {
+    width: 280px;
+    padding: 10px;
+    background-color: var(--color-white);
+    border-right: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    box-shadow: 0 0 10px var(--color-shadow-light);
+}
+
+#canvas-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--color-background);
+    overflow: hidden;
+    position: relative;
+}
+
+#canvas {
+    cursor: crosshair;
+    box-shadow: rgba(6, 24, 44, 0.4) 0px 0px 0px 0.1px, rgba(6, 24, 44, 0.1) 0px 4px 6px -0.25px, rgba(255, 255, 255, 0.08) 0px 0.25px 0px inset;
+    image-rendering: pixelated;
+}
+
+#overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+}
+
+.toolbar-section {
+    margin-bottom: 10px;
+    text-align: center;
+    width: 100%;
+}
+
+.toolbar-section label {
+    display: block;
+    margin-bottom: 0px;
+    font-size: var(--font-size-default);
+    font-weight: 400;
+    padding: 0px;
+}
+
+.toolbar-section input,
+.toolbar-section textarea,
+.toolbar-section button {
+    padding: 5px;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.toolbar-section input[type="number"] {
+    width: 60px;
+    margin: 0 0px;
+}
+
+.toolbar-section input[type="number"].pixelSize {
+    width: 45px;
+    margin-bottom: 5px;
+    border: 2px solid var(--color-active-background)
+}
+
+.toolbar-section.row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 5px;
+}
+
+.toolbar-section.row.buttonsRow {
+    justify-content: flex-end;
+}
+
+#toolbar.tools {
+    width: 50px;
+    padding: 5px;
+}
+
+#toolbar.tools .toolbar-section button {
+    margin-bottom: 5px;
+    padding: 0px;
+    width: 37px;
+    height: 37px;
+    background-color: var(--color-white);
+    color: black;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    box-shadow: var(--color-shadow-dark) 0px 1px 4px;
+}
+
+.toolbar-section.row button {
+    border-radius: 30px;
+}
+
+#toolbar.tools .toolbar-section button:hover {
+    filter: brightness(0.9);
+    color: var(--color-active-color);
+}
+
+#toolbar.tools .toolbar-section button.active {
+    background-color: var(--color-button);
+    color: var(--color-active-color);
+}
+
+#toolbar.tools .toolbar-section button.active:hover {
+    background-color: var(--color-button-hover);
+}
+
+#toolbar.tools .toolbar-section button::before {
+    font-family: "NerdFontSymbols";
+    font-size: 18px;
+    position: relative;
+    top: 0px;
+    font-weight: 6400;
+    color: rgb(0, 0, 0);
+}
+
+#toolbar.tools .toolbar-section button.active::before {
+    color: white;
+}
+
+button[data-tool='pen']::before {
+    content: "\f448";
+}
+
+button[data-tool='line']::before {
+    content: "\f055e";
+}
+
+button[data-tool='fill']::before {
+    content: "\f0266";
+}
+
+.custom-file-upload {
+    display: inline-block;
+    padding: 3px 10px !important;
+    cursor: pointer;
+    background-color: var(--color-active-background);
+    color: white;
+    border-radius: 4px;
+    margin-right: 10px;
+    position: relative;
+    margin-right: -76px;
+    margin-left: 10px;
+}
+
+.custom-file-upload:hover {
+    background-color: var(--color-button-hover);
+}
+
+#imageUpload {
+    width: 240px;
+    max-width: 240px;
+}
+
+#imageUpload::before {
+    content: "Upload Image";
+    display: inline-block;
+    background-color: var(--color-active-background);
+    color: white;
+    padding: 6px 12px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+#imageUpload:focus+.custom-file-upload {
+    outline: 1px dotted #000;
+    outline: -webkit-focus-ring-color auto 5px;
+}
+
+#colorPalette {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 3px;
+    margin-bottom: 10px;
+}
+
+#pixelData {
+    height: 200px;
+    min-height: 50px;
+    width: 280px;
+    resize: vertical;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: pre;
+    font-size: var(--font-size-small);
+    font-family: monospace;
+    line-height: 0.8;
+    letter-spacing: 3px;
+    border-radius: 4px;
+    border: none;
+    box-shadow: var(--color-shadow-dark) 0px 1px 4px;
+    overflow-y: auto;
+    padding: 0px;
+    margin-bottom: 10px;
+}
+
+#toolbar::-webkit-scrollbar,
+#pixelData::-webkit-scrollbar {
+    width: 8px;
+}
+
+#toolbar::-webkit-scrollbar-track,
+#pixelData::-webkit-scrollbar-track {
+    background: var(--color-background);
+    border-radius: 10px;
+}
+
+#toolbar::-webkit-scrollbar-thumb,
+#pixelData::-webkit-scrollbar-thumb {
+    background: var(--color-scrollbar-thumb);
+    border-radius: 10px;
+}
+
+#toolbar::-webkit-scrollbar-thumb:hover,
+#pixelData::-webkit-scrollbar-thumb:hover {
+    background: var(--color-scrollbar-thumb-hover);
+}
+
+#toolbar {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-scrollbar-thumb) var(--color-background);
+}
+
+#pixelData {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-scrollbar-thumb) var(--color-background);
+}
+
+#copyButton,
+#undoButton,
+#redoButton,
+#setCanvasSize {
+    margin-top: 0px;
+    padding: 5px 5px;
+    padding-left: 2px;
+    background-color: var(--color-button);
+    color: var(--color-active-color);
+    border: none;
+    cursor: pointer;
+    box-shadow: var(--color-shadow-dark) 0px 1px 4px;
+    width: 40px;
+    height: 28px;
+    font-weight: 600;
+    font-family: var(--font-family);
+}
+
+#copyButton:hover,
+#undoButton:hover,
+#redoButton:hover,
+#setCanvasSize:hover {
+    background-color: var(--color-button-hover);
+    opacity: 1;
+}
+
+#undoButton,
+#redoButton {
+    width: 28px;
+    height: 28px;
+    padding: 0px;
+    border-radius: 30px;
+    color: white;
+    font-weight: 400;
+}
+
+#processImageButton {
+    min-width: 33px;
+    height: 33px;
+    padding: 0px;
+    border-radius: 30px;
+    background-color: var(--color-active-background);
+    color: white;
+    cursor: pointer;
+    margin-left: 0px;
+    border: none;
+    outline: none;
+}
+
+#copyButton {
+    position: relative;
+    bottom: 50px;
+    left: 120px;
+    width: 33px;
+    height: 33px;
+    padding: 0px;
+    border-radius: 30px;
+    color: white;
+    opacity: 0.5;
+}
+
+#download {
+    position: absolute;
+    background-color: var(--color-button);
+    bottom: 0px;
+    right: 0px;
+    width: 50px;
+    height: 50px;
+    margin: 10px;
+    border: 4px solid white;
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+}
+
+#download:hover {
+    background-color: var(--color-button-hover);
+}
+
+#download::before,
+#processImageButton::before,
+#undoButton::before,
+#redoButton::before,
+#copyButton::before {
+    font-family: "NerdFontSymbols";
+    font-size: 16px;
+    position: relative;
+    top: 0px;
+    font-weight: 6400;
+}
+
+#download::before {
+    content: "\f01da";
+    font-size: 21px;
+}
+
+#processImageButton::before {
+    content: "\f0ae2";
+}
+
+#copyButton::before {
+    content: "\f4bb";
+
+}
+
+#undoButton::before {
+    content: "\f17b3";
+}
+
+#redoButton::before {
+    content: "\f17b7";
+}
+
+#colorPicker {
+    width: 100%;
+    margin-bottom: 0px;
+}
+
+.color-box {
+    width: 20px;
+    height: 40px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin-bottom: 1px;
+    overflow: hidden;
+    box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
+}
+
+.color-box:hover {
+    transform: translateY(-2px);
+    transition: transform 0.1s ease;
+}
+
+.color-box span {
+    padding: 3px;
+    position: relative;
+    width: 100%;
+    bottom: -10px;
+    background-color: var(--color-background);
+    font-size: var(--font-size-default);
+}
+
+.color-box[data-active="true"] span {
+    background-color: var(--color-active-background);
+    color: var(--color-active-color);
+}
+
+hex-color-picker::part(hue) {
+    height: 14px;
+}
+
+hex-color-picker::part(hue-pointer),
+hex-color-picker::part(saturation-pointer) {
+    width: 17px;
+    height: 17px;
+}
+
+#overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+}
+
+#draw-overlay {
+    position: absolute;
+    border: 1px solid black;
+    pointer-events: none;
+    z-index: 10;
 }
