@@ -5,6 +5,10 @@
 
 This tool allows you to create pixel art and convert it into a format compatible with [p5play's](https://p5play.org/) Tile and Sprite functions. The editor is equipped with a variety of features to enhance your creative process.
 
+## Live Demo
+
+You can access the live version of the Tile Map Editor [here](https://tezumie.github.io/p5play-Tile-Map-Editor/). 
+
 ## Features
 
 - **Drawing Tools**: Choose from three different tools—Pen, Line, and Fill—to create your pixel art.
@@ -21,9 +25,6 @@ It also works in reverse, you can type or paste in your tilemap strings and it w
 
 *NOTE: It will only update from typing or pasting once the dimensions of ur string/pasted tilemap are accurate for the canvas set size*
 
-## Live Demo
-
-You can access the live version of the Tile Map Editor [here](https://tezumie.github.io/p5play-Tile-Map-Editor/). 
 
 Enjoy creating amazing pixel art and integrating it seamlessly with p5play!
 
