@@ -23,7 +23,7 @@ You can access the live version of the Tile Map Editor [here](https://tezumie.gi
 
 Enjoy creating amazing pixel art and integrating it seamlessly with p5play!
 
-![editor img](![Capture](https://github.com/Tezumie/p5play-Tile-Map-Editor/assets/102488626/4e596f48-4031-4499-bea7-c7837669263b)
+[example](https://github.com/Tezumie/p5play-Tile-Map-Editor/assets/102488626/4e596f48-4031-4499-bea7-c7837669263b)
 
 ## Contributing
 
