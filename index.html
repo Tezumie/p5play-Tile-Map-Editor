@@ -5,6 +5,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" type="text/css" href="style.css" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap"
+        rel="stylesheet" />
 </head>
 <script type="module" src="https://unpkg.com/vanilla-colorful?module"></script>
 
@@ -20,9 +23,16 @@
             <button title="redo draw action" id="redoButton"></button>
         </div>
         <div class="toolbar-section row buttonsRow">
-            <label for="imageUpload" class="custom-file-upload">Browse</label>
+            <label title="upload an image to edit" for="imageUpload" class="custom-file-upload"
+                    >set canvas image</label>
             <input type="file" id="imageUpload" accept="image/*" />
             <button title="process image" id="processImageButton"></button>
+        </div>
+        <div class="toolbar-section row buttonsRow">
+            <label title="upload a reference image" for="overlayUpload" class="custom-file-upload"
+                    >set background image</label>
+            <input type="file" id="overlayUpload" accept="image/*" />
+            <button title="toggle reference image" id="toggleOverlayImage"></button>
         </div>
         <div class="toolbar-section">
             <label for="colorPicker"></label>
@@ -35,8 +45,10 @@
         </div>
     </div>
     <div id="canvas-container">
+        <div id="referenceOverlay"></div>
         <canvas id="canvas"></canvas>
         <div id="overlay"></div>
+
         <button title="download canvas image" id="download"></button>
         <div id="cursor"></div>
         <div id="linePreview"></div>
@@ -50,11 +62,47 @@
         </div>
     </div>
     <script>
-        class PixelArtEditor {
+        let backgroundImg
+        let isBackgroundVisible = false
+
+            document.getElementById("overlayUpload").addEventListener("change", function (event) {
+                const file = event.target.files[0]
+                if (file) {
+                    const reader = new FileReader()
+                    reader.onload = function (e) {
+                        backgroundImg = e.target.result
+                        const referenceOverlay = document.getElementById("referenceOverlay")
+                        referenceOverlay.style.backgroundImage = `url(${backgroundImg})`
+                        isBackgroundVisible = true
+                        document.getElementById("toggleOverlayImage").classList.add("active")
+                    }
+                    reader.readAsDataURL(file)
+                }
+            })
+
+            document.getElementById("toggleOverlayImage").addEventListener("click", function () {
+                const referenceOverlay = document.getElementById("referenceOverlay")
+                if (!backgroundImg) {
+                    alert("Set a background image first")
+                    return
+                }
+                if (isBackgroundVisible) {
+                    this.classList.remove("active")
+                    referenceOverlay.style.backgroundImage = `none`
+                    isBackgroundVisible = false
+                } else {
+                    this.classList.add("active")
+                    referenceOverlay.style.backgroundImage = `url(${backgroundImg})`
+                    isBackgroundVisible = true
+                }
+            })
+
+            class PixelArtEditor {
                 constructor() {
                     this.canvas = document.getElementById("canvas")
                     this.ctx = this.canvas.getContext("2d")
                     this.overlay = document.getElementById("overlay")
+                    this.referenceOverlay = document.getElementById("referenceOverlay")
                     this.canvasWidthInput = document.getElementById("canvasWidth")
                     this.canvasHeightInput = document.getElementById("canvasHeight")
                     this.drawSizeInput = document.getElementById("drawSize")
@@ -88,7 +136,7 @@
                     this.pixelData = []
                     this.drawSize = parseInt(this.drawSizeInput.value, 10)
                     this.defaultColors = {
-                        ".": "#ffffff",
+                        ".": "#ffffff00",
                         a: "#00FFFF",
                         A: "#99FFFF",
                         b: "#000000",
@@ -182,7 +230,7 @@
                     this.redoButton.addEventListener("click", () => this.redo())
                     this.penToolButton.addEventListener("click", () => this.setActiveTool("pen"))
                     this.lineToolButton.addEventListener("click", () => this.setActiveTool("line"))
-                    this.fillToolButton.addEventListener("click", () => this.setActiveTool("fill")) 
+                    this.fillToolButton.addEventListener("click", () => this.setActiveTool("fill"))
                     this.downloadButton = document.getElementById("download")
                     this.downloadButton.addEventListener("click", () => this.downloadImage())
                     this.setCanvasSize()
@@ -194,13 +242,13 @@
                     link.download = "pixel_art.png"
                     link.click()
                 }
-                
+
                 setActiveTool(tool) {
                     this.activeTool = tool
                     this.penToolButton.classList.toggle("active", tool === "pen")
                     this.lineToolButton.classList.toggle("active", tool === "line")
-                    this.fillToolButton.classList.toggle("active", tool === "fill") 
-                    this.lineStart = null 
+                    this.fillToolButton.classList.toggle("active", tool === "fill")
+                    this.lineStart = null
                     this.hideLinePreview()
                 }
 
@@ -213,7 +261,7 @@
                 }
 
                 createColorPalette() {
-                    this.colorPalette.innerHTML = "" 
+                    this.colorPalette.innerHTML = ""
                     for (const [key, value] of Object.entries(this.defaultColors)) {
                         const colorBox = document.createElement("div")
                         colorBox.className = "color-box"
@@ -235,20 +283,22 @@
                     this.activeColor = color
                     this.activeColorKey = key
                     this.colorPicker.color = color
-                    this.createColorPalette() 
+                    this.createColorPalette()
                 }
 
                 updatePaletteColor(color, key) {
-                    this.defaultColors[key] = color 
-                    this.createColorPalette() 
+                    this.defaultColors[key] = color
+                    this.createColorPalette()
                     this.redrawCanvas()
                 }
 
                 handleColorChange(event) {
-                    const newColor = event.detail.value
-                    this.activeColor = newColor
-                    this.defaultColors[this.activeColorKey] = newColor
-                    this.updatePaletteColor(newColor, this.activeColorKey)
+                    if (this.activeColorKey != ".") {
+                        const newColor = event.detail.value
+                        this.activeColor = newColor
+                        this.defaultColors[this.activeColorKey] = newColor
+                        this.updatePaletteColor(newColor, this.activeColorKey)
+                    }
                 }
 
                 setCanvasSize() {
@@ -256,14 +306,14 @@
                     const height = parseInt(this.canvasHeightInput.value, 10)
                     this.canvas.width = width
                     this.canvas.height = height
-                    this.ctx.fillStyle = "#ffffff"
+                    this.ctx.fillStyle = "#ffffff00"
                     this.ctx.fillRect(0, 0, width, height)
                     this.fitCanvasToContainer()
                     this.updateOverlaySize()
                     this.createGrid()
                     this.initializePixelData(width, height)
                     this.updatePixelDataTextArea()
-                    this.saveState() 
+                    this.saveState()
                 }
 
                 fitCanvasToContainer() {
@@ -279,6 +329,7 @@
                     const transform = `translate(${this.panX}px, ${this.panY}px) scale(${this.scale})`
                     this.canvas.style.transform = transform
                     this.overlay.style.transform = transform
+                    this.referenceOverlay.style.transform = transform
                 }
 
                 updateOverlaySize() {
@@ -286,6 +337,11 @@
                     this.overlay.style.height = `${this.canvas.height}px`
                     this.overlay.style.left = `${this.canvas.offsetLeft}px`
                     this.overlay.style.top = `${this.canvas.offsetTop}px`
+
+                    this.referenceOverlay.style.width = `${this.canvas.width}px`
+                    this.referenceOverlay.style.height = `${this.canvas.height}px`
+                    this.referenceOverlay.style.left = `${this.canvas.offsetLeft}px`
+                    this.referenceOverlay.style.top = `${this.canvas.offsetTop}px`
                 }
 
                 createGrid() {
@@ -298,7 +354,7 @@
 
                     offscreenCtx.clearRect(0, 0, offscreenCanvas.width, offscreenCanvas.height)
                     offscreenCtx.strokeStyle = "black"
-                    offscreenCtx.lineWidth = 0.2 
+                    offscreenCtx.lineWidth = 0.2
 
                     for (let x = 0; x <= offscreenCanvas.width; x += gridSize * 8) {
                         offscreenCtx.beginPath()
@@ -315,7 +371,7 @@
 
                     const gridDataURL = offscreenCanvas.toDataURL()
                     this.overlay.style.backgroundImage = `url(${gridDataURL})`
-                    this.overlay.style.backgroundSize = `${this.canvas.width}px ${this.canvas.height}px` 
+                    this.overlay.style.backgroundSize = `${this.canvas.width}px ${this.canvas.height}px`
                 }
 
                 initializePixelData(width, height) {
@@ -334,7 +390,7 @@
                     this.ctx.fillStyle = color
                     this.hideCursor()
                     this.hideLinePreview()
-                    
+
                     x = Math.round(x)
                     y = Math.round(y)
 
@@ -347,7 +403,11 @@
                     for (let dx = startX; dx < endX; dx++) {
                         for (let dy = startY; dy < endY; dy++) {
                             if (dx >= 0 && dx < this.canvas.width && dy >= 0 && dy < this.canvas.height) {
-                                this.ctx.fillRect(dx, dy, 1, 1)
+                                if (color === "#ffffff00") {
+                                    this.ctx.clearRect(dx, dy, 1, 1) // Clear the pixel
+                                } else {
+                                    this.ctx.fillRect(dx, dy, 1, 1) // Draw the pixel
+                                }
                                 if (update) {
                                     this.updatePixelData(dx, dy, color)
                                 }
@@ -397,12 +457,11 @@
                     this.linePreview.style.display = "none"
                 }
                 showLinePreview(x0, y0, x1, y1) {
-                   
                     x0 = Math.round(x0)
                     y0 = Math.round(y0)
                     x1 = Math.round(x1)
                     y1 = Math.round(y1)
-                  
+
                     const halfSize = Math.floor(this.drawSize / 2)
 
                     const startX = (x0 - halfSize) * this.scale
@@ -423,9 +482,9 @@
                         (this.canvas.height / 2) * this.scale
                     }px`
                     this.linePreview.style.width = `${lineWidth}px`
-                    this.linePreview.style.height = "2px" 
+                    this.linePreview.style.height = "2px"
                     this.linePreview.style.transform = `rotate(${rotation}rad)`
-                    this.linePreview.style.transformOrigin = "0 0" 
+                    this.linePreview.style.transformOrigin = "0 0"
                     this.linePreview.style.display = "block"
                 }
 
@@ -464,7 +523,7 @@
                         } else if (e.button === 2) {
                             this.saveState()
                             this.isErasing = true
-                            this.drawPixel(pos.x, pos.y, "#ffffff")
+                            this.drawPixel(pos.x, pos.y, "#ffffff00") // Use transparent color
                         }
                     } else if (this.activeTool === "line") {
                         if (e.button === 0) {
@@ -485,7 +544,7 @@
                         } else if (e.button === 2) {
                             this.saveState()
                             this.isErasing = true
-                            this.fillArea(pos.x, pos.y, "#ffffff")
+                            this.fillArea(pos.x, pos.y, "#ffffff00") // Use transparent color
                         }
                     }
                 }
@@ -519,7 +578,7 @@
                         if (this.isDrawing) {
                             this.drawPixel(pos.x, pos.y, this.activeColor)
                         } else if (this.isErasing) {
-                            this.drawPixel(pos.x, pos.y, "#ffffff")
+                            this.drawPixel(pos.x, pos.y, "#ffffff00") // Use transparent color
                             this.drawCursor(true, pos.x, pos.y, this.activeColor, false)
                         }
                     } else {
@@ -600,7 +659,7 @@
                     for (let y = 0; y < data.length; y++) {
                         for (let x = 0; x < data[y].length; x++) {
                             const key = data[y][x]
-                            const color = this.defaultColors[key] || "#ffffff"
+                            const color = this.defaultColors[key] || "#ffffff00"
                             this.drawPixel(x, y, color, true, 1)
                         }
                     }
@@ -608,7 +667,7 @@
 
                 saveState() {
                     this.undoStack.push(this.pixelData.map((row) => row.slice()))
-                    this.redoStack = [] 
+                    this.redoStack = []
                 }
 
                 undo() {
@@ -630,12 +689,13 @@
                 }
 
                 redrawCanvas() {
-                    this.ctx.fillStyle = "#ffffff"
+                    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+                    this.ctx.fillStyle = "#ffffff00"
                     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
                     for (let y = 0; y < this.pixelData.length; y++) {
                         for (let x = 0; x < this.pixelData[y].length; x++) {
                             const key = this.pixelData[y][x]
-                            const color = this.defaultColors[key] || "#ffffff"
+                            const color = this.defaultColors[key] || "#ffffff00"
                             this.ctx.fillStyle = color
                             this.ctx.fillRect(x, y, 1, 1)
                         }
@@ -649,6 +709,8 @@
                 fillArea(x, y, color) {
                     const targetColor = this.ctx.getImageData(x, y, 1, 1).data
                     const fillRgb = this.hexToRgb(color)
+
+                    // Check if the target color is the same as the fill color
                     if (this.colorsMatch(targetColor, fillRgb)) return
 
                     const imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height)
@@ -680,7 +742,11 @@
                         const currentColor = getColorAt(currX, currY)
                         if (!this.colorsMatch(currentColor, targetColor)) continue
 
-                        setColorAt(currX, currY, fillRgb)
+                        if (color === "#ffffff00") {
+                            setColorAt(currX, currY, color)
+                        } else {
+                            setColorAt(currX, currY, fillRgb)
+                        }
 
                         const colorKey = Object.keys(this.defaultColors).find(
                             (key) => this.defaultColors[key] === color
@@ -712,7 +778,6 @@
                 processUploadedImage() {
                     const fileInput = document.getElementById("imageUpload")
                     const file = fileInput.files[0]
-
                     if (file) {
                         const reader = new FileReader()
                         reader.onload = (e) => {
@@ -723,6 +788,8 @@
                             img.src = e.target.result
                         }
                         reader.readAsDataURL(file)
+                    } else {
+                        alert("Set a canvas image first, than you can draw it to your canvas.")
                     }
                 }
                 resizeAndProcessImage(img) {
@@ -755,12 +822,14 @@
                     this.updatePixelDataTextArea()
                 }
                 getClosestColor(r, g, b, a) {
-                    if (a < 128) return "#ffffff"
+                    if (a < 128) return "#ffffff00"
 
                     let closestColor = null
                     let minDistance = Infinity
 
-                    for (const [_, color] of Object.entries(this.defaultColors)) {
+                    for (const [key, color] of Object.entries(this.defaultColors)) {
+                        if (key === ".") continue // Ignore the color associated with "."
+
                         const [r2, g2, b2] = this.hexToRgb(color)
                         const distance = Math.sqrt((r - r2) ** 2 + (g - g2) ** 2 + (b - b2) ** 2)
 
