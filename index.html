@@ -5,66 +5,127 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" type="text/css" href="style.css" />
-    <link
-        href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap"
-        rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+        integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script type="module" src="https://unpkg.com/vanilla-colorful?module"></script>
+
 </head>
-<script type="module" src="https://unpkg.com/vanilla-colorful?module"></script>
 
 <body>
     <div id="toolbar">
-        <div class="toolbar-section row buttonsRow">
-            <label for="canvasWidth">W</label>
-            <input title="canvas width" type="number" id="canvasWidth" value="24" />
-            <label for="canvasHeight">H</label>
-            <input title="canvas height" type="number" id="canvasHeight" value="24" />
-            <button title="set canvas dimensions and clear canvas" id="setCanvasSize">Set</button>
-            <button title="undo draw action" id="undoButton"></button>
-            <button title="redo draw action" id="redoButton"></button>
+        <div class="input-container">
+            <button id="recenterButton">Center Viewport</button>
+            <button id="undoButton" title="Undo"><i class="fas fa-undo"></i></button>
+            <button id="redoButton" title="Redo"><i class="fas fa-redo"></i></button>
         </div>
-        <div class="toolbar-section row buttonsRow">
-            <label title="upload an image to edit" for="imageUpload" class="custom-file-upload"
-                    >set canvas image</label>
-            <input type="file" id="imageUpload" accept="image/*" />
-            <button title="process image" id="processImageButton"></button>
+
+        <div class="settings-container" id="settings">
+            <h2>Settings<i class="fa fa-chevron-down"></i></h2>
+            <div class="input-container">
+                <label for="canvasWidth">Tiles X</label>
+                <input type="number" id="canvasWidth" value="40" />
+            </div>
+            <div class="input-container">
+                <label for="canvasHeight">Tiles Y</label>
+                <input type="number" id="canvasHeight" value="24" />
+            </div>
+            <button id="setCanvasSize">Apply Settings</button>
         </div>
-        <div class="toolbar-section row buttonsRow">
-            <label title="upload a reference image" for="overlayUpload" class="custom-file-upload"
-                    >set background image</label>
-            <input type="file" id="overlayUpload" accept="image/*" />
-            <button title="toggle reference image" id="toggleOverlayImage"></button>
+
+        <div class="settings-container collapsed" id="imageSettings">
+            <h2>Image<i class="fa fa-chevron-right"></i></h2>
+            <div class="input-container">
+                <button id="backgroundImageButton">Reference Image</button>
+                <input type="file" id="overlayUpload" accept="image/*" hidden />
+                <button id="toggleOverlayImage">Toggle</button>
+            </div>
+            <button id="canvasImageButton">Canvas Image</button>
+            <input type="file" id="imageUpload" accept="image/*" hidden />
+            <button id="download" title="Download Canvas Image">Download Image</button>
         </div>
-        <div class="toolbar-section">
-            <label for="colorPicker"></label>
+
+        <div class="settings-container" id="palette">
+            <h2>Palette<i class="fa fa-chevron-down"></i></h2>
             <hex-color-picker id="colorPicker" color="#000000"></hex-color-picker>
+            <div id="colorPalette"></div>
         </div>
-        <div class="toolbar-section color-palette" id="colorPalette"></div>
-        <div class="toolbar-section">
+
+        <div class="settings-container" id="palette">
+            <h2>Export<i class="fa fa-chevron-down"></i></h2>
+            <div class="input-container">
+                <button id="copyButton">Copy</button>
+                <button id="toggleExpandButton">Expand</button>
+            </div>
             <textarea id="pixelData" spellcheck="false"></textarea>
-            <button title="copy to clipboard" id="copyButton"></button>
+            <div id="resizeHandle"></div>
         </div>
+
     </div>
+
     <div id="canvas-container">
         <div id="referenceOverlay"></div>
         <canvas id="canvas"></canvas>
         <div id="overlay"></div>
-
-        <button title="download canvas image" id="download"></button>
         <div id="cursor"></div>
         <div id="linePreview"></div>
     </div>
-    <div id="toolbar" class="tools">
-        <div class="toolbar-section">
-            <input title="draw tool pixel size" type="number" id="drawSize" class="pixelSize" value="1" min="1" />
-            <button title="pen" id="penTool" class="tool-button active" data-tool="pen"></button>
-            <button title="line" id="lineTool" class="tool-button" data-tool="line"></button>
-            <button title="fill" id="fillTool" class="tool-button" data-tool="fill"></button>
-        </div>
+
+    <div class="tools">
+        <input type="number" id="drawSize" class="pixelSize" value="1" min="1" title="Draw Tool Pixel Size" />
+        <button id="penTool" class="tool-button active" data-tool="pen" title="Pen">
+            <i class="fas fa-pen"></i>
+        </button>
+        <button id="lineTool" class="tool-button" data-tool="line" title="Line">
+            <i class="fas fa-slash"></i>
+        </button>
+        <button id="fillTool" class="tool-button" data-tool="fill" title="Fill">
+            <i class="fas fa-fill-drip"></i>
+        </button>
     </div>
+
     <script>
+        const toggleExpandButton = document.getElementById("toggleExpandButton");
+const pixelData = document.getElementById("pixelData");
+
+// Add event listener for toggling class and changing button text
+toggleExpandButton.addEventListener("click", () => {
+    pixelData.classList.toggle("expanded");
+
+    // Update button text based on the current state
+    if (pixelData.classList.contains("expanded")) {
+        toggleExpandButton.textContent = "Collapse";
+    } else {
+        toggleExpandButton.textContent = "Expand";
+    }
+});
+
+
+        document.querySelectorAll('.settings-container h2').forEach(header => {
+  header.onclick = () => {
+    const container = header.parentElement;
+    const chevron = header.querySelector('.fa-chevron-down, .fa-chevron-right');
+
+    const isCollapsed = container.classList.toggle('collapsed');
+
+    if (chevron) {
+      chevron.classList.toggle('fa-chevron-right', isCollapsed);
+      chevron.classList.toggle('fa-chevron-down', !isCollapsed);
+    }
+  };
+});
         let backgroundImg
         let isBackgroundVisible = false
 
+        document.getElementById("canvasImageButton").addEventListener("click", () => {
+    document.getElementById("imageUpload").click();
+});
+document.getElementById("backgroundImageButton").addEventListener("click", () => {
+    document.getElementById("overlayUpload").click();
+});
             document.getElementById("overlayUpload").addEventListener("change", function (event) {
                 const file = event.target.files[0]
                 if (file) {
@@ -119,9 +180,8 @@
                     this.penToolButton = document.getElementById("penTool")
                     this.lineToolButton = document.getElementById("lineTool")
                     this.fillToolButton = document.getElementById("fillTool")
-                    this.processImageButton = document.getElementById("processImageButton")
-                    this.processImageButton.addEventListener("click", () => this.processUploadedImage())
-                    this.activeTool = "pen"
+                                    this.imageUpload = document.getElementById("imageUpload");
+                this.imageUpload.addEventListener("change", (e) => this.handleImageUpload(e));                    this.activeTool = "pen"
                     this.lineStart = null
                     this.scale = 1
                     this.panX = 0
@@ -209,13 +269,12 @@
                         this.hideCursor()
                         this.hideLinePreview()
                     })
-                    this.canvasContainer.addEventListener("contextmenu", (e) => e.preventDefault())
                     this.canvas.addEventListener("mouseup", () => this.handleMouseUp())
                     this.canvas.addEventListener("contextmenu", (e) => e.preventDefault())
+                    this.canvasContainer.addEventListener("contextmenu", (e) => e.preventDefault())
                     this.canvasContainer.addEventListener("mousedown", (e) => this.handlePanningStart(e))
                     this.canvasContainer.addEventListener("mousemove", (e) => this.handlePanningMove(e))
                     this.canvasContainer.addEventListener("mouseup", () => this.handlePanningEnd())
-                    this.canvasContainer.addEventListener("mouseup", () => this.handleMouseUp())
                     this.canvasContainer.addEventListener("wheel", (e) => this.handleZoom(e))
                     window.addEventListener("keydown", (e) => this.handleKeyDown(e))
 
@@ -233,6 +292,7 @@
                     this.fillToolButton.addEventListener("click", () => this.setActiveTool("fill"))
                     this.downloadButton = document.getElementById("download")
                     this.downloadButton.addEventListener("click", () => this.downloadImage())
+                    document.getElementById("recenterButton").addEventListener("click", () => this.recenterViewport());
                     this.setCanvasSize()
                 }
 
@@ -261,22 +321,34 @@
                 }
 
                 createColorPalette() {
-                    this.colorPalette.innerHTML = ""
+                    this.colorPalette.innerHTML = "";
                     for (const [key, value] of Object.entries(this.defaultColors)) {
-                        const colorBox = document.createElement("div")
-                        colorBox.className = "color-box"
-                        colorBox.style.backgroundColor = value
-                        colorBox.dataset.color = value
-                        colorBox.dataset.key = key
-                        colorBox.innerHTML = `<span>${key}</span>`
+                        const colorBox = document.createElement("div");
+                        colorBox.className = "color-box";
+                        colorBox.style.backgroundColor = value;
+                        colorBox.dataset.color = value;
+                        colorBox.dataset.key = key;
+
+                        const textColor = this.getContrastColor(value); // Get contrast color
+
+                        colorBox.innerHTML = `<span style="color: ${textColor}">${key}</span>`;
+                        
                         if (value === this.activeColor) {
-                            colorBox.dataset.active = "true"
+                            colorBox.dataset.active = "true";
                         }
+                        
                         colorBox.addEventListener("click", () => {
-                            this.setActiveColor(value, key)
-                        })
-                        this.colorPalette.appendChild(colorBox)
+                            this.setActiveColor(value, key);
+                        });
+
+                        this.colorPalette.appendChild(colorBox);
                     }
+                }
+
+                getContrastColor(hex) {
+                    const [r, g, b] = this.hexToRgb(hex);
+                    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+                    return brightness > 128 ? "#000000" : "#FFFFFF";
                 }
 
                 setActiveColor(color, key) {
@@ -301,47 +373,81 @@
                     }
                 }
 
-                setCanvasSize() {
-                    const width = parseInt(this.canvasWidthInput.value, 10)
-                    const height = parseInt(this.canvasHeightInput.value, 10)
-                    this.canvas.width = width
-                    this.canvas.height = height
-                    this.ctx.fillStyle = "#ffffff00"
-                    this.ctx.fillRect(0, 0, width, height)
-                    this.fitCanvasToContainer()
-                    this.updateOverlaySize()
-                    this.createGrid()
-                    this.initializePixelData(width, height)
-                    this.updatePixelDataTextArea()
-                    this.saveState()
-                }
+setCanvasSize() {
+    const width = parseInt(this.canvasWidthInput.value, 10);
+    const height = parseInt(this.canvasHeightInput.value, 10);
 
-                fitCanvasToContainer() {
-                    const containerWidth = this.canvasContainer.clientWidth
-                    const containerHeight = this.canvasContainer.clientHeight
-                    this.scale = Math.min(containerWidth / this.canvas.width, containerHeight / this.canvas.height) / 2
-                    this.panX = 0
-                    this.panY = 0
-                    this.updateCanvasTransform()
-                }
+    // Store the current content in an offscreen canvas
+    const offscreenCanvas = document.createElement("canvas");
+    const offscreenCtx = offscreenCanvas.getContext("2d");
 
-                updateCanvasTransform() {
-                    const transform = `translate(${this.panX}px, ${this.panY}px) scale(${this.scale})`
-                    this.canvas.style.transform = transform
-                    this.overlay.style.transform = transform
-                    this.referenceOverlay.style.transform = transform
-                }
+    offscreenCanvas.width = this.canvas.width;
+    offscreenCanvas.height = this.canvas.height;
+    offscreenCtx.drawImage(this.canvas, 0, 0);
+
+    // Resize the main canvas
+    this.canvas.width = width;
+    this.canvas.height = height;
+
+    // Set transparent background and redraw the stored content
+    this.ctx.fillStyle = "#ffffff00";
+    this.ctx.fillRect(0, 0, width, height);
+    this.ctx.drawImage(
+        offscreenCanvas,
+        0, 0, Math.min(width, offscreenCanvas.width), Math.min(height, offscreenCanvas.height),
+        0, 0, Math.min(width, offscreenCanvas.width), Math.min(height, offscreenCanvas.height)
+    );
+
+    this.fitCanvasToContainer();
+    this.updateOverlaySize();
+    this.createGrid();
+
+    // Adjust pixel data to match the new canvas size
+    this.trimPixelData(width, height);
+    this.updatePixelDataTextArea();
+    this.saveState();
+}
+
+// Trims pixel data to fit the new canvas size without losing existing data
+trimPixelData(newWidth, newHeight) {
+    const trimmedData = Array.from({ length: newHeight }, (_, y) =>
+        Array.from({ length: newWidth }, (_, x) =>
+            (this.pixelData[y] && this.pixelData[y][x]) ? this.pixelData[y][x] : "."
+        )
+    );
+    this.pixelData = trimmedData;
+}
+
+
+
+  fitCanvasToContainer() {
+                const containerWidth = this.canvasContainer.clientWidth;
+                const containerHeight = this.canvasContainer.clientHeight;
+                this.scale = Math.min(
+                    containerWidth / this.canvas.width,
+                    containerHeight / this.canvas.height
+                ) / 2;
+                this.panX = (containerWidth - this.canvas.width * this.scale) / 2;
+                this.panY = (containerHeight - this.canvas.height * this.scale) / 2;
+                this.updateCanvasTransform();
+            }
+
+            updateCanvasTransform() {
+                const transform = `translate(${this.panX}px, ${this.panY}px) scale(${this.scale})`;
+                this.canvas.style.transformOrigin = '0 0';
+                this.canvas.style.transform = transform;
+                this.overlay.style.transformOrigin = '0 0';
+                this.overlay.style.transform = transform;
+                this.referenceOverlay.style.transformOrigin = '0 0';
+                this.referenceOverlay.style.transform = transform;
+            }
+
 
                 updateOverlaySize() {
                     this.overlay.style.width = `${this.canvas.width}px`
                     this.overlay.style.height = `${this.canvas.height}px`
-                    this.overlay.style.left = `${this.canvas.offsetLeft}px`
-                    this.overlay.style.top = `${this.canvas.offsetTop}px`
-
                     this.referenceOverlay.style.width = `${this.canvas.width}px`
                     this.referenceOverlay.style.height = `${this.canvas.height}px`
-                    this.referenceOverlay.style.left = `${this.canvas.offsetLeft}px`
-                    this.referenceOverlay.style.top = `${this.canvas.offsetTop}px`
                 }
 
                 createGrid() {
@@ -380,12 +486,11 @@
 
                 getMousePos(event) {
                     const rect = this.canvas.getBoundingClientRect()
-                    const scaleX = this.canvas.width / rect.width
-                    const scaleY = this.canvas.height / rect.height
-                    const x = (event.clientX - rect.left) * scaleX
-                    const y = (event.clientY - rect.top) * scaleY
+                    const x = (event.clientX - rect.left) * (this.canvas.width / rect.width)
+                    const y = (event.clientY - rect.top) * (this.canvas.height / rect.height)
                     return { x: Math.floor(x), y: Math.floor(y) }
                 }
+
                 drawPixel(x, y, color, update = true, drawingsize = this.drawSize) {
                     this.ctx.fillStyle = color
                     this.hideCursor()
@@ -415,6 +520,14 @@
                         }
                     }
                 }
+
+                canvasToScreen(x, y) {
+                    return {
+                        x: x * this.scale + this.panX,
+                        y: y * this.scale + this.panY
+                    }
+                }
+
                 drawCursor(erasing = false, x, y, color, update = true, drawingsize = this.drawSize) {
                     x = Math.round(x)
                     y = Math.round(y)
@@ -432,30 +545,23 @@
                     const halfSize = Math.floor(drawingsize / 2)
                     const startX = x - halfSize
                     const startY = y - halfSize
-                    const endX = x + halfSize + (drawingsize % 2 === 0 ? 0 : 1)
-                    const endY = y + halfSize + (drawingsize % 2 === 0 ? 0 : 1)
 
-                    this.cursor.style.width = `${drawingsize * this.scale + 0.5}px`
-                    this.cursor.style.height = `${drawingsize * this.scale + 0.5}px`
-                    this.cursor.style.left = `${
-                        startX * this.scale +
-                        this.panX +
-                        this.canvasContainer.offsetWidth / 2 -
-                        (this.canvas.width / 2) * this.scale
-                    }px`
-                    this.cursor.style.top = `${
-                        startY * this.scale +
-                        this.panY +
-                        this.canvasContainer.offsetHeight / 2 -
-                        (this.canvas.height / 2) * this.scale
-                    }px`
+                    const screenPos = this.canvasToScreen(startX, startY)
+
+                    this.cursor.style.width = `${drawingsize * this.scale}px`
+                    this.cursor.style.height = `${drawingsize * this.scale}px`
+                    this.cursor.style.left = `${screenPos.x}px`
+                    this.cursor.style.top = `${screenPos.y}px`
                 }
+
                 hideCursor() {
                     this.cursor.style.display = "none"
                 }
+
                 hideLinePreview() {
                     this.linePreview.style.display = "none"
                 }
+
                 showLinePreview(x0, y0, x1, y1) {
                     x0 = Math.round(x0)
                     y0 = Math.round(y0)
@@ -464,23 +570,21 @@
 
                     const halfSize = Math.floor(this.drawSize / 2)
 
-                    const startX = (x0 - halfSize) * this.scale
-                    const startY = (y0 - halfSize) * this.scale
-                    const endX = (x1 - halfSize) * this.scale
-                    const endY = (y1 - halfSize) * this.scale
+                    const startX = x0 - halfSize
+                    const startY = y0 - halfSize
+                    const endX = x1 - halfSize
+                    const endY = y1 - halfSize
 
-                    const lineWidth = Math.hypot(endX - startX, endY - startY)
-                    const rotation = Math.atan2(endY - startY, endX - startX)
+                    const screenStart = this.canvasToScreen(startX, startY)
+                    const screenEnd = this.canvasToScreen(endX, endY)
 
-                    this.linePreview.style.left = `${
-                        startX + this.panX + this.canvasContainer.offsetWidth / 2 - (this.canvas.width / 2) * this.scale
-                    }px`
-                    this.linePreview.style.top = `${
-                        startY +
-                        this.panY +
-                        this.canvasContainer.offsetHeight / 2 -
-                        (this.canvas.height / 2) * this.scale
-                    }px`
+                    const deltaX = screenEnd.x - screenStart.x
+                    const deltaY = screenEnd.y - screenStart.y
+                    const lineWidth = Math.hypot(deltaX, deltaY)
+                    const rotation = Math.atan2(deltaY, deltaX)
+
+                    this.linePreview.style.left = `${screenStart.x}px`
+                    this.linePreview.style.top = `${screenStart.y}px`
                     this.linePreview.style.width = `${lineWidth}px`
                     this.linePreview.style.height = "2px"
                     this.linePreview.style.transform = `rotate(${rotation}rad)`
@@ -504,6 +608,7 @@
                     this.pixelDataTextArea.selectionStart = cursorPosition
                     this.pixelDataTextArea.selectionEnd = cursorPosition
                 }
+
                 handleKeyDown(e) {
                     if (e.ctrlKey && e.key === "z") {
                         this.undo()
@@ -511,6 +616,7 @@
                         this.redo()
                     }
                 }
+
                 handleMouseDown(e) {
                     const pos = this.getMousePos(e)
 
@@ -597,8 +703,10 @@
                 handlePanningStart(e) {
                     if (e.button === 1) {
                         this.isPanning = true
-                        this.startX = e.clientX - this.panX
-                        this.startY = e.clientY - this.panY
+                        this.startX = e.clientX
+                        this.startY = e.clientY
+                        this.initialPanX = this.panX
+                        this.initialPanY = this.panY
                         this.canvasContainer.style.cursor = "grabbing"
                         e.preventDefault()
                     }
@@ -606,8 +714,8 @@
 
                 handlePanningMove(e) {
                     if (this.isPanning) {
-                        this.panX = e.clientX - this.startX
-                        this.panY = e.clientY - this.startY
+                        this.panX = this.initialPanX + (e.clientX - this.startX)
+                        this.panY = this.initialPanY + (e.clientY - this.startY)
                         this.updateCanvasTransform()
                     }
                 }
@@ -623,13 +731,28 @@
                     e.preventDefault()
                     const zoomFactor = 0.1
 
+                    const rect = this.canvasContainer.getBoundingClientRect()
+                    const mouseX = e.clientX - rect.left
+                    const mouseY = e.clientY - rect.top
+
+                    const oldScale = this.scale
                     if (e.deltaY < 0) {
                         this.scale *= 1 + zoomFactor
                     } else {
                         this.scale /= 1 + zoomFactor
                     }
 
+                    const scaleChange = this.scale / oldScale
+
+                    // Adjust pan to keep mouse position stable
+                    this.panX -= (mouseX - this.panX) * (scaleChange - 1)
+                    this.panY -= (mouseY - this.panY) * (scaleChange - 1)
+
                     this.updateCanvasTransform()
+                }
+
+                recenterViewport() {
+                    this.fitCanvasToContainer()
                 }
 
                 handleResize() {
@@ -743,7 +866,7 @@
                         if (!this.colorsMatch(currentColor, targetColor)) continue
 
                         if (color === "#ffffff00") {
-                            setColorAt(currX, currY, color)
+                            setColorAt(currX, currY, [0, 0, 0, 0])
                         } else {
                             setColorAt(currX, currY, fillRgb)
                         }
@@ -775,52 +898,74 @@
                     return [r, g, b, 255]
                 }
 
-                processUploadedImage() {
-                    const fileInput = document.getElementById("imageUpload")
-                    const file = fileInput.files[0]
-                    if (file) {
-                        const reader = new FileReader()
-                        reader.onload = (e) => {
-                            const img = new Image()
-                            img.onload = () => {
-                                this.resizeAndProcessImage(img)
-                            }
-                            img.src = e.target.result
-                        }
-                        reader.readAsDataURL(file)
-                    } else {
-                        alert("Set a canvas image first, than you can draw it to your canvas.")
-                    }
+          handleImageUpload(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const img = new Image();
+                        img.onload = () => this.processImage(img);
+                        img.src = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
                 }
-                resizeAndProcessImage(img) {
-                    const canvas = document.createElement("canvas")
-                    const ctx = canvas.getContext("2d")
+            }
+ 
+ processImage(img) {
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
 
-                    canvas.width = this.canvas.width
-                    canvas.height = this.canvas.height
+    canvas.width = this.canvas.width;
+    canvas.height = this.canvas.height;
 
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
-                    const data = imageData.data
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+    const processedData = new Uint8ClampedArray(data.length); // Store processed pixels
+    this.pixelData = Array.from({ length: canvas.height }, () => Array(canvas.width).fill(".")); // Reset pixelData
 
-                    this.saveState()
+    const width = canvas.width;
+    const height = canvas.height;
 
-                    for (let y = 0; y < canvas.height; y++) {
-                        for (let x = 0; x < canvas.width; x++) {
-                            const index = (y * canvas.width + x) * 4
-                            const r = data[index]
-                            const g = data[index + 1]
-                            const b = data[index + 2]
-                            const a = data[index + 3]
+    // Process pixels and update pixelData
+    for (let y = 0; y < height; y++) {
+        for (let x = 0; x < width; x++) {
+            const index = (y * width + x) * 4;
+            const r = data[index];
+            const g = data[index + 1];
+            const b = data[index + 2];
+            const a = data[index + 3];
 
-                            const closestColor = this.getClosestColor(r, g, b, a)
-                            this.drawPixel(x, y, closestColor, true, 1)
-                        }
-                    }
+            const closestColor = this.getClosestColor(r, g, b, a);
+            const [newR, newG, newB, newA] = this.hexToRgb(closestColor);
 
-                    this.updatePixelDataTextArea()
-                }
+            // Update processedData for drawing
+            processedData[index] = newR;
+            processedData[index + 1] = newG;
+            processedData[index + 2] = newB;
+            processedData[index + 3] = newA;
+
+            // Update pixelData for the textarea
+            const colorKey = Object.entries(this.defaultColors).find(
+                ([, value]) => value === closestColor
+            )?.[0] || ".";
+            
+            this.pixelData[y][x] = colorKey;
+        }
+    }
+
+    // Draw the entire image once
+    const newImageData = new ImageData(processedData, width, height);
+    this.ctx.putImageData(newImageData, 0, 0);
+
+    // Update the textarea with the new pixelData
+    this.updatePixelDataTextArea();
+    this.saveState(); // Save the current state
+}
+
+
+
                 getClosestColor(r, g, b, a) {
                     if (a < 128) return "#ffffff00"
 
