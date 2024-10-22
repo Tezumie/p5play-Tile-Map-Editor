@@ -27,27 +27,29 @@
             <h2>Settings<i class="fa fa-chevron-down"></i></h2>
             <div class="input-container">
                 <label for="canvasWidth">Tiles X</label>
-                <input type="number" id="canvasWidth" value="40" />
+                <input type="number" id="canvasWidth" value="40" step="1" />
             </div>
             <div class="input-container">
                 <label for="canvasHeight">Tiles Y</label>
                 <input type="number" id="canvasHeight" value="24" />
             </div>
-            <button id="setCanvasSize">Apply Settings</button>
+            <div class="input-container">
+                <button id="setCanvasSize">Apply Settings</button>
+            </div>
         </div>
-
         <div class="settings-container collapsed" id="imageSettings">
             <h2>Image<i class="fa fa-chevron-right"></i></h2>
             <div class="input-container">
                 <button id="backgroundImageButton">Reference Image</button>
                 <input type="file" id="overlayUpload" accept="image/*" hidden />
-                <button id="toggleOverlayImage">Toggle</button>
+                <button id="toggleOverlayImage"></button>
             </div>
-            <button id="canvasImageButton">Canvas Image</button>
-            <input type="file" id="imageUpload" accept="image/*" hidden />
-            <button id="download" title="Download Canvas Image">Download Image</button>
+            <div class="input-container">
+                <button title="Generate a tilemap from an image"id="canvasImageButton">Set Canvas Image</button>
+                <input type="file" id="imageUpload" accept="image/*" hidden />
+                <button title="Download tilemap as an image" id="download" class="download" title="Download Canvas Image"><i class="fa-solid fa-download"></i></button>
+            </div>
         </div>
-
         <div class="settings-container" id="palette">
             <h2>Palette<i class="fa fa-chevron-down"></i></h2>
             <hex-color-picker id="colorPicker" color="#000000"></hex-color-picker>
@@ -57,13 +59,12 @@
         <div class="settings-container" id="palette">
             <h2>Export<i class="fa fa-chevron-down"></i></h2>
             <div class="input-container">
-                <button id="copyButton">Copy</button>
-                <button id="toggleExpandButton">Expand</button>
+                <button title="Copy tilemap string to clipboard"id="copyButton"><i class="fa-regular fa-copy"></i> Copy</button>
+                <button title="Download tilemap as an image" id="download2" class="download" title="Download Canvas Image"><i class="fa-solid fa-download"></i></button>
+                <button title="Expand/Collapse your tilemap text area" id="toggleExpandButton"><i class="fa-solid fa-maximize"></i></button>
             </div>
             <textarea id="pixelData" spellcheck="false"></textarea>
-            <div id="resizeHandle"></div>
         </div>
-
     </div>
 
     <div id="canvas-container">
@@ -85,47 +86,65 @@
         <button id="fillTool" class="tool-button" data-tool="fill" title="Fill">
             <i class="fas fa-fill-drip"></i>
         </button>
+        <button id="clearCanvasButton" title="Clear Canvas"><i class="fas fa-trash-alt"></i></button>
+
     </div>
 
     <script>
-        const toggleExpandButton = document.getElementById("toggleExpandButton");
-const pixelData = document.getElementById("pixelData");
+        document.querySelectorAll('input[type="number"]').forEach((input) => {
+                input.addEventListener('wheel', (event) => {
+                    event.preventDefault(); // Prevent page scrolling
+                    const step = parseInt(input.step) || 1; // Use the step value (default to 1)
+                    const delta = Math.sign(event.deltaY); // Get scroll direction
 
-// Add event listener for toggling class and changing button text
-toggleExpandButton.addEventListener("click", () => {
-    pixelData.classList.toggle("expanded");
+                    // Calculate new value, ensuring it doesn't go below 1
+                    const newValue = Math.max(1, parseInt(input.value) - delta * step);
+                    input.value = newValue;
 
-    // Update button text based on the current state
-    if (pixelData.classList.contains("expanded")) {
-        toggleExpandButton.textContent = "Collapse";
-    } else {
-        toggleExpandButton.textContent = "Expand";
-    }
-});
+                    input.dispatchEvent(new Event('input')); // Trigger input event
+                });
+            });
+
+            const toggleExpandButton = document.getElementById("toggleExpandButton");
+            const pixelData = document.getElementById("pixelData");
+
+            // Add event listener for toggling class and changing button icon
+            toggleExpandButton.addEventListener("click", () => {
+                pixelData.classList.toggle("expanded");
+                toggleExpandButton.classList.toggle("active");
+
+                // Update button icon and active state based on the current state
+                if (pixelData.classList.contains("expanded")) {
+                    toggleExpandButton.innerHTML = '<i class="fa-solid fa-minimize"></i>';
+                } else {
+                    toggleExpandButton.innerHTML = '<i class="fa-solid fa-maximize"></i>';
+                }
+            });
 
 
-        document.querySelectorAll('.settings-container h2').forEach(header => {
-  header.onclick = () => {
-    const container = header.parentElement;
-    const chevron = header.querySelector('.fa-chevron-down, .fa-chevron-right');
+            document.querySelectorAll('.settings-container h2').forEach(header => {
+                header.onclick = () => {
+                    const container = header.parentElement;
+                    const chevron = header.querySelector('.fa-chevron-down, .fa-chevron-right');
 
-    const isCollapsed = container.classList.toggle('collapsed');
+                    const isCollapsed = container.classList.toggle('collapsed');
 
-    if (chevron) {
-      chevron.classList.toggle('fa-chevron-right', isCollapsed);
-      chevron.classList.toggle('fa-chevron-down', !isCollapsed);
-    }
-  };
-});
-        let backgroundImg
-        let isBackgroundVisible = false
+                    if (chevron) {
+                    chevron.classList.toggle('fa-chevron-right', isCollapsed);
+                    chevron.classList.toggle('fa-chevron-down', !isCollapsed);
+                    }
+                };
+                });
+            let backgroundImg
+            let isBackgroundVisible = false
 
-        document.getElementById("canvasImageButton").addEventListener("click", () => {
-    document.getElementById("imageUpload").click();
-});
-document.getElementById("backgroundImageButton").addEventListener("click", () => {
-    document.getElementById("overlayUpload").click();
-});
+            document.getElementById("canvasImageButton").addEventListener("click", () => {
+                document.getElementById("imageUpload").click();
+            });
+            document.getElementById("backgroundImageButton").addEventListener("click", () => {
+                document.getElementById("overlayUpload").click();
+            });
+
             document.getElementById("overlayUpload").addEventListener("change", function (event) {
                 const file = event.target.files[0]
                 if (file) {
@@ -290,9 +309,12 @@ document.getElementById("backgroundImageButton").addEventListener("click", () =>
                     this.penToolButton.addEventListener("click", () => this.setActiveTool("pen"))
                     this.lineToolButton.addEventListener("click", () => this.setActiveTool("line"))
                     this.fillToolButton.addEventListener("click", () => this.setActiveTool("fill"))
-                    this.downloadButton = document.getElementById("download")
-                    this.downloadButton.addEventListener("click", () => this.downloadImage())
+                    const downloadButtons = document.querySelectorAll('.download');
+                    downloadButtons.forEach(button => {
+                        button.addEventListener('click', () => this.downloadImage());
+                    });
                     document.getElementById("recenterButton").addEventListener("click", () => this.recenterViewport());
+                        document.getElementById("clearCanvasButton").addEventListener("click", () => this.clearCanvas());
                     this.setCanvasSize()
                 }
 
@@ -373,50 +395,60 @@ document.getElementById("backgroundImageButton").addEventListener("click", () =>
                     }
                 }
 
-setCanvasSize() {
-    const width = parseInt(this.canvasWidthInput.value, 10);
-    const height = parseInt(this.canvasHeightInput.value, 10);
+                clearCanvas() {
+                    const confirmed = confirm("Are you sure you want to clear the canvas? This action cannot be undone.");
+                    if (confirmed) {
+                        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                        this.initializePixelData(this.canvas.width, this.canvas.height);
+                        this.updatePixelDataTextArea();
+                        this.saveState(); 
+                    }
+                }
 
-    // Store the current content in an offscreen canvas
-    const offscreenCanvas = document.createElement("canvas");
-    const offscreenCtx = offscreenCanvas.getContext("2d");
+                setCanvasSize() {
+                    const width = parseInt(this.canvasWidthInput.value, 10);
+                    const height = parseInt(this.canvasHeightInput.value, 10);
 
-    offscreenCanvas.width = this.canvas.width;
-    offscreenCanvas.height = this.canvas.height;
-    offscreenCtx.drawImage(this.canvas, 0, 0);
+                    // Store the current content in an offscreen canvas
+                    const offscreenCanvas = document.createElement("canvas");
+                    const offscreenCtx = offscreenCanvas.getContext("2d");
 
-    // Resize the main canvas
-    this.canvas.width = width;
-    this.canvas.height = height;
+                    offscreenCanvas.width = this.canvas.width;
+                    offscreenCanvas.height = this.canvas.height;
+                    offscreenCtx.drawImage(this.canvas, 0, 0);
 
-    // Set transparent background and redraw the stored content
-    this.ctx.fillStyle = "#ffffff00";
-    this.ctx.fillRect(0, 0, width, height);
-    this.ctx.drawImage(
-        offscreenCanvas,
-        0, 0, Math.min(width, offscreenCanvas.width), Math.min(height, offscreenCanvas.height),
-        0, 0, Math.min(width, offscreenCanvas.width), Math.min(height, offscreenCanvas.height)
-    );
+                    // Resize the main canvas
+                    this.canvas.width = width;
+                    this.canvas.height = height;
 
-    this.fitCanvasToContainer();
-    this.updateOverlaySize();
-    this.createGrid();
+                    // Set transparent background and redraw the stored content
+                    this.ctx.fillStyle = "#ffffff00";
+                    this.ctx.fillRect(0, 0, width, height);
+                    this.ctx.drawImage(
+                        offscreenCanvas,
+                        0, 0, Math.min(width, offscreenCanvas.width), Math.min(height, offscreenCanvas.height),
+                        0, 0, Math.min(width, offscreenCanvas.width), Math.min(height, offscreenCanvas.height)
+                    );
 
-    // Adjust pixel data to match the new canvas size
-    this.trimPixelData(width, height);
-    this.updatePixelDataTextArea();
-    this.saveState();
-}
+                    this.fitCanvasToContainer();
+                    this.updateOverlaySize();
+                    this.createGrid();
 
-// Trims pixel data to fit the new canvas size without losing existing data
-trimPixelData(newWidth, newHeight) {
-    const trimmedData = Array.from({ length: newHeight }, (_, y) =>
-        Array.from({ length: newWidth }, (_, x) =>
-            (this.pixelData[y] && this.pixelData[y][x]) ? this.pixelData[y][x] : "."
-        )
-    );
-    this.pixelData = trimmedData;
-}
+                    // Adjust pixel data to match the new canvas size
+                    this.trimPixelData(width, height);
+                    this.updatePixelDataTextArea();
+                    this.saveState();
+                }
+
+                // Trims pixel data to fit the new canvas size without losing existing data
+                trimPixelData(newWidth, newHeight) {
+                    const trimmedData = Array.from({ length: newHeight }, (_, y) =>
+                        Array.from({ length: newWidth }, (_, x) =>
+                            (this.pixelData[y] && this.pixelData[y][x]) ? this.pixelData[y][x] : "."
+                        )
+                    );
+                    this.pixelData = trimmedData;
+                }
 
 
 
@@ -761,8 +793,13 @@ trimPixelData(newWidth, newHeight) {
                 }
 
                 copyPixelData() {
-                    this.pixelDataTextArea.select()
-                    document.execCommand("copy")
+                    this.pixelDataTextArea.select();
+                    document.execCommand("copy");
+                    
+                    this.copyButton.innerHTML = `<i class="fa-solid fa-check"></i> Copied!`;
+                    setTimeout(() => {
+                        this.copyButton.innerHTML = '<i class="fa-regular fa-copy"></i> Copy';
+                    }, 1000);
                 }
 
                 handlePixelDataInput() {
