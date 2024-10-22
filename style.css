@@ -272,7 +272,7 @@
 
     button {
         width: 100%;
-        padding: 8px 10px;
+        padding: 7px 7px;
         margin-bottom: 10px;
         background: var(--accent);
         color: var(--accent-text);
@@ -298,6 +298,9 @@
 
     }
 
+    #toggleExpandButton,
+    #download2,
+    #download,
     #toggleOverlayImage {
         width: 70px;
         background-color: var(--primary);
@@ -305,11 +308,55 @@
         border: 2px solid var(--accent);
     }
 
-    #toggleOverlayImage.active {
-        width: 70px;
+    #toggleOverlayImage {
+        height: 34px;
+        position: relative;
+    }
+
+    #toggleOverlayImage::before {
+        content: '';
+        position: absolute;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background-color: var(--text);
+        top: 6px;
+        left: 7px;
+        transition: transform 0.3s;
+    }
+
+    #toggleOverlayImage.active::before {
+        transform: translateX(22px);
+    }
+
+    #toggleOverlayImage:hover::before {
+        background-color: var(--accent-text);
+    }
+
+    #toggleExpandButton.active {
         background-color: var(--accent-hover);
         color: var(--accent-text);
         border: 2px solid var(--accent-hover);
+    }
+
+    #toggleExpandButton:hover,
+    #download2:hover,
+    #download:hover,
+    #toggleOverlayImage:hover {
+        background-color: var(--accent);
+        color: var(--accent-text);
+    }
+
+    #clearCanvasButton {
+        margin-top: auto;
+    }
+
+    #clearCanvasButton:hover {
+        background-color: #ff2727;
+    }
+
+    #copyButton {
+        max-width: 90px
     }
 
     #undoButton,
